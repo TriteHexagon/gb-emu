@@ -31,9 +31,10 @@ void Machine::Reset()
     m_cpu.Reset();
     m_memory.Reset();
     m_timer.Reset();
+    m_graphics.Reset();
 }
 
-void Machine::Run()
+void Machine::Run(unsigned int cycles)
 {
-    m_cpu.Run();
+    m_cpu.Run(cycles);
 }

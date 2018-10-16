@@ -22,6 +22,8 @@
 #include "timer.h"
 #include "machine.h"
 
+const unsigned int clock_cycles_per_machine_cycle = 4;
+
 const unsigned int TAC_CLOCK_SELECT = 0x3;
 const unsigned int TAC_ENABLE = Bit(2);
 
@@ -96,7 +98,7 @@ void Timer::WriteTAC(u8 val)
 
 void Timer::Update(unsigned int cycles)
 {
-    m_counter += cycles;
+    m_counter += cycles * clock_cycles_per_machine_cycle;
 
     if (m_timer_enable)
     {

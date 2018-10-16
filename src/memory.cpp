@@ -33,9 +33,7 @@ void Memory::LoadROM(std::vector<u8> rom)
 
 void Memory::Reset()
 {
-    memset(m_vram, 0, sizeof(m_vram));
     memset(m_wram, 0, sizeof(m_wram));
-    memset(m_oam, 0, sizeof(m_oam));
     memset(m_hram, 0, sizeof(m_hram));
 }
 
@@ -53,6 +51,28 @@ u8 Memory::ReadMMIO(u16 addr)
         return m_machine.GetTimer().ReadTAC();
     case 0xFF0F: // IF
         return m_machine.GetCPU().ReadIF();
+    case 0xFF40: // LCDC
+        return m_machine.GetGraphics().ReadLCDC();
+    case 0xFF41: // STAT
+        return m_machine.GetGraphics().ReadSTAT();
+    case 0xFF42: // SCY
+        return m_machine.GetGraphics().ReadSCY();
+    case 0xFF43: // SCX
+        return m_machine.GetGraphics().ReadSCX();
+    case 0xFF44: // LY
+        return m_machine.GetGraphics().ReadLY();
+    case 0xFF45: // LYC
+        return m_machine.GetGraphics().ReadLYC();
+    case 0xFF47: // BGP
+        return m_machine.GetGraphics().ReadBGP();
+    case 0xFF48: // OBP0
+        return m_machine.GetGraphics().ReadOBP0();
+    case 0xFF49: // OBP1
+        return m_machine.GetGraphics().ReadOBP1();
+    case 0xFF4A: // WY
+        return m_machine.GetGraphics().ReadWY();
+    case 0xFF4B: // WX
+        return m_machine.GetGraphics().ReadWX();
     }
 
     return 0xFF;
@@ -84,7 +104,7 @@ u8 Memory::Read_Fnnn(u16 addr)
     else if (addr >= 0xFE00)
     {
         // 0xFE00-0xFE9F
-        return m_oam[addr - 0xFE00];
+        return m_machine.GetGraphics().ReadOAM(addr - 0xFE00);
     }
     else
     {
@@ -108,7 +128,7 @@ u8 Memory::Read(u16 addr)
         return m_rom[addr];
     case 0x8:
     case 0x9:
-        return m_vram[addr & 0x1FFF];
+        return m_machine.GetGraphics().ReadVRAM(addr & 0x1FFF);
     case 0xA:
     case 0xB:
         return m_sram[addr & 0x1FFF];
@@ -145,6 +165,39 @@ void Memory::WriteMMIO(u16 addr, u8 val)
     case 0xFF0F: // IF
         m_machine.GetCPU().WriteIF(val);
         break;
+    case 0xFF40: // LCDC
+        m_machine.GetGraphics().WriteLCDC(val);
+        break;
+    case 0xFF41: // STAT
+        m_machine.GetGraphics().WriteSTAT(val);
+        break;
+    case 0xFF42: // SCY
+        m_machine.GetGraphics().WriteSCY(val);
+        break;
+    case 0xFF43: // SCX
+        m_machine.GetGraphics().WriteSCX(val);
+        break;
+    case 0xFF45: // LYC
+        m_machine.GetGraphics().WriteLYC(val);
+        break;
+    case 0xFF46: // DMA
+        m_machine.GetGraphics().WriteDMA(val);
+        break;
+    case 0xFF47: // BGP
+        m_machine.GetGraphics().WriteBGP(val);
+        break;
+    case 0xFF48: // OBP0
+        m_machine.GetGraphics().WriteOBP0(val);
+        break;
+    case 0xFF49: // OBP1
+        m_machine.GetGraphics().WriteOBP1(val);
+        break;
+    case 0xFF4A: // WY
+        m_machine.GetGraphics().WriteWY(val);
+        break;
+    case 0xFF4B: // WX
+        m_machine.GetGraphics().WriteWX(val);
+        break;
     }
 }
 
@@ -173,7 +226,7 @@ void Memory::Write_Fnnn(u16 addr, u8 val)
     else if (addr >= 0xFE00)
     {
         // 0xFE00-0xFE9F
-        m_oam[addr - 0xFE00] = val;
+        m_machine.GetGraphics().WriteOAM(addr - 0xFE00, val);
     }
     else
     {
@@ -198,7 +251,7 @@ void Memory::Write(u16 addr, u8 val)
         break;
     case 0x8:
     case 0x9:
-        m_vram[addr & 0x1FFF] = val;
+        m_machine.GetGraphics().WriteVRAM(addr & 0x1FFF, val);
         break;
     case 0xA:
     case 0xB:

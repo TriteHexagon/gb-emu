@@ -49,8 +49,6 @@
 #define REG_IF (m_reg_if)
 #define REG_IE (m_reg_ie)
 
-const int CLOCK_CYCLES_PER_MACHINE_CYCLE = 4;
-
 const int FLAG_C_SHIFT = 4;
 const int FLAG_H_SHIFT = 5;
 const int FLAG_N_SHIFT = 6;
@@ -77,11 +75,15 @@ void CPU::Reset()
 
     REG_IF = 0;
     REG_IE = 0;
+
+    m_cycles_left = 0;
 }
 
-void CPU::Run()
+void CPU::Run(unsigned int cycles)
 {
-    while (true)
+    m_cycles_left += cycles;
+
+    while (m_cycles_left > 0)
     {
         m_instruction_cycles = 0;
 
@@ -106,6 +108,8 @@ void CPU::Run()
                 m_ime_state = IMEState::EnableNow;
             }
         }
+
+        m_cycles_left -= m_instruction_cycles;
     }
 }
 
@@ -143,7 +147,8 @@ void CPU::AddCycles(unsigned int cycles)
 {
     m_instruction_cycles += cycles;
 
-    m_machine.GetTimer().Update(cycles * CLOCK_CYCLES_PER_MACHINE_CYCLE);
+    m_machine.GetTimer().Update(cycles);
+    m_machine.GetGraphics().Update(cycles);
 }
 
 u8 CPU::ReadMem8(u16 addr)

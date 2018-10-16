@@ -39,7 +39,7 @@ public:
     }
 
     void Reset();
-    void Run();
+    void Run(unsigned int cycles);
 
     u8 ReadIF();
     void WriteIF(u8 val);
@@ -187,4 +187,6 @@ private:
     u8 m_reg_ie; // interrupt enable flags
 
     unsigned int m_instruction_cycles;
+
+    int m_cycles_left;
 };

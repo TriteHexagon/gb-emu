@@ -25,6 +25,7 @@
 #include "cpu.h"
 #include "memory.h"
 #include "timer.h"
+#include "graphics.h"
 
 class Machine
 {
@@ -32,13 +33,19 @@ public:
     Machine() :
         m_cpu(*this),
         m_memory(*this),
-        m_timer(*this)
+        m_timer(*this),
+        m_graphics(*this)
     {
     }
 
     void LoadROM(std::vector<u8> rom);
     void Reset();
-    void Run();
+    void Run(unsigned int cycles);
+
+    const FramebufferArray& GetFramebuffer() const
+    {
+        return m_graphics.GetFramebuffer();
+    }
 
     CPU& GetCPU()
     {
@@ -55,8 +62,14 @@ public:
         return m_timer;
     }
 
+    Graphics& GetGraphics()
+    {
+        return m_graphics;
+    }
+
 private:
     CPU m_cpu;
     Memory m_memory;
     Timer m_timer;
+    Graphics m_graphics;
 };

@@ -45,9 +45,7 @@ private:
 
     Machine& m_machine;
 
-    u8 m_vram[0x2000]; // video RAM
     u8 m_wram[0x2000]; // work RAM
-    u8 m_oam[0xA0];    // object attribute memory
     u8 m_hram[0x7F];   // high RAM
 
     // TODO: implement mappers
