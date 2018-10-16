@@ -51,7 +51,7 @@ public:
     void ClearInterruptFlag(u16 mask);
 
 private:
-    union CpuRegisterPair
+    union RegisterPair
     {
         u16 word;
         u8 byte[2];
@@ -175,7 +175,7 @@ private:
 
     Machine& m_machine;
 
-    CpuRegisterPair m_reg_af, m_reg_bc, m_reg_de, m_reg_hl; // general registers
+    RegisterPair m_reg_af, m_reg_bc, m_reg_de, m_reg_hl; // general registers
     u16 m_reg_sp; // stack pointer
     u16 m_reg_pc; // program counter
 
