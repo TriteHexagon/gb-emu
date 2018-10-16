@@ -49,15 +49,15 @@
 #define REG_IF (m_reg_if)
 #define REG_IE (m_reg_ie)
 
-const int FLAG_C_SHIFT = 4;
-const int FLAG_H_SHIFT = 5;
-const int FLAG_N_SHIFT = 6;
-const int FLAG_Z_SHIFT = 7;
+const int flag_c_shift = 4;
+const int flag_h_shift = 5;
+const int flag_n_shift = 6;
+const int flag_z_shift = 7;
 
-const unsigned int FLAG_C = Bit(FLAG_C_SHIFT);
-const unsigned int FLAG_H = Bit(FLAG_H_SHIFT);
-const unsigned int FLAG_N = Bit(FLAG_N_SHIFT);
-const unsigned int FLAG_Z = Bit(FLAG_Z_SHIFT);
+const unsigned int flag_c = Bit(flag_c_shift);
+const unsigned int flag_h = Bit(flag_h_shift);
+const unsigned int flag_n = Bit(flag_n_shift);
+const unsigned int flag_z = Bit(flag_z_shift);
 
 void CPU::Reset()
 {
@@ -115,12 +115,12 @@ void CPU::Run(unsigned int cycles)
 
 u8 CPU::ReadIF()
 {
-    return REG_IF | ~INTR_ALL;
+    return REG_IF | ~intr_all;
 }
 
 void CPU::WriteIF(u8 val)
 {
-    REG_IF = val & INTR_ALL;
+    REG_IF = val & intr_all;
 }
 
 u8 CPU::ReadIE()
@@ -206,7 +206,7 @@ u16 CPU::ReadNextWord()
 
 u8 CPU::ZFlag(u8 val)
 {
-    return (val == 0) ? FLAG_Z : 0;
+    return (val == 0) ? flag_z : 0;
 }
 
 u8 CPU::SwapNybbles(u8 val)
@@ -260,16 +260,16 @@ void CPU::DisableInterrupts()
 
 void CPU::Op_ADC_A(u8 val)
 {
-    int carry = (REG_F & FLAG_C) >> FLAG_C_SHIFT;
+    int carry = (REG_F & flag_c) >> flag_c_shift;
     u16 temp = REG_A + val + carry;
     REG_F = ZFlag((u8)temp);
     if (temp > 0xFF)
     {
-        REG_F |= FLAG_C;
+        REG_F |= flag_c;
     }
     if ((REG_A & 0xF) + (val & 0xF) + carry > 0xF)
     {
-        REG_F |= FLAG_H;
+        REG_F |= flag_h;
     }
     REG_A = (u8)temp;
 }
@@ -280,11 +280,11 @@ void CPU::Op_ADD_A(u8 val)
     REG_F = ZFlag((u8)temp);
     if (temp > 0xFF)
     {
-        REG_F |= FLAG_C;
+        REG_F |= flag_c;
     }
     if ((REG_A & 0xF) + (val & 0xF) > 0xF)
     {
-        REG_F |= FLAG_H;
+        REG_F |= flag_h;
     }
     REG_A = (u8)temp;
 }
@@ -292,14 +292,14 @@ void CPU::Op_ADD_A(u8 val)
 void CPU::Op_ADD_HL(u16 val)
 {
     u32 temp = REG_HL + val;
-    REG_F &= FLAG_Z;
+    REG_F &= flag_z;
     if (temp > 0xFFFF)
     {
-        REG_F |= FLAG_C;
+        REG_F |= flag_c;
     }
     if (((REG_HL ^ val) ^ temp) & 0x1000)
     {
-        REG_F |= FLAG_H;
+        REG_F |= flag_h;
     }
     REG_HL = temp;
     AddCycles(1);
@@ -309,10 +309,10 @@ void CPU::Op_ADD_SP_Imm()
 {
     u8 val = ReadNextByte();
     unsigned int temp = (u8)REG_SP + val;
-    REG_F = (temp > 0xFF) ? FLAG_C : 0;
+    REG_F = (temp > 0xFF) ? flag_c : 0;
     if (((REG_SP ^ val) ^ temp) & 0x10)
     {
-        REG_F |= FLAG_H;
+        REG_F |= flag_h;
     }
     REG_SP += (s8)val;
     AddCycles(2);
@@ -321,19 +321,19 @@ void CPU::Op_ADD_SP_Imm()
 void CPU::Op_AND_A(u8 val)
 {
     REG_A &= val;
-    REG_F = ZFlag(REG_A) | FLAG_H;
+    REG_F = ZFlag(REG_A) | flag_h;
 }
 
 void CPU::Op_BIT_PtrHL(int bit)
 {
-    REG_F &= FLAG_C;
-    REG_F |= ZFlag(ReadMem8(REG_HL) & Bit(bit)) | FLAG_H;
+    REG_F &= flag_c;
+    REG_F |= ZFlag(ReadMem8(REG_HL) & Bit(bit)) | flag_h;
 }
 
 void CPU::Op_BIT_Reg8(int bit, u8 reg)
 {
-    REG_F &= FLAG_C;
-    REG_F |= ZFlag(reg & Bit(bit)) | FLAG_H;
+    REG_F &= flag_c;
+    REG_F |= ZFlag(reg & Bit(bit)) | flag_h;
 }
 
 void CPU::Op_CALL()
@@ -344,7 +344,7 @@ void CPU::Op_CALL()
 void CPU::Op_CALL_NZ()
 {
     u16 target = ReadNextWord();
-    if (!(REG_F & FLAG_Z))
+    if (!(REG_F & flag_z))
     {
         Call(target);
     }
@@ -353,7 +353,7 @@ void CPU::Op_CALL_NZ()
 void CPU::Op_CALL_Z()
 {
     u16 target = ReadNextWord();
-    if (REG_F & FLAG_Z)
+    if (REG_F & flag_z)
     {
         Call(target);
     }
@@ -362,7 +362,7 @@ void CPU::Op_CALL_Z()
 void CPU::Op_CALL_NC()
 {
     u16 target = ReadNextWord();
-    if (!(REG_F & FLAG_C))
+    if (!(REG_F & flag_c))
     {
         Call(target);
     }
@@ -371,7 +371,7 @@ void CPU::Op_CALL_NC()
 void CPU::Op_CALL_C()
 {
     u16 target = ReadNextWord();
-    if (REG_F & FLAG_C)
+    if (REG_F & flag_c)
     {
         Call(target);
     }
@@ -379,65 +379,65 @@ void CPU::Op_CALL_C()
 
 void CPU::Op_CCF()
 {
-    REG_F ^= FLAG_C;
-    REG_F &= FLAG_Z | FLAG_C;
+    REG_F ^= flag_c;
+    REG_F &= flag_z | flag_c;
 }
 
 void CPU::Op_CP_A(u8 val)
 {
-    REG_F = FLAG_N;
+    REG_F = flag_n;
     if (REG_A == val)
     {
-        REG_F |= FLAG_Z;
+        REG_F |= flag_z;
     }
     if (val > REG_A)
     {
-        REG_F |= FLAG_C;
+        REG_F |= flag_c;
     }
     if ((val & 0xF) > (REG_A & 0xF))
     {
-        REG_F |= FLAG_H;
+        REG_F |= flag_h;
     }
 }
 
 void CPU::Op_CPL_A()
 {
     REG_A = ~REG_A;
-    REG_F |= FLAG_N | FLAG_H;
+    REG_F |= flag_n | flag_h;
 }
 
 void CPU::Op_DAA()
 {
     unsigned int a = REG_A;
 
-    if (REG_F & FLAG_N)
+    if (REG_F & flag_n)
     {
-        if (REG_F & FLAG_H)
+        if (REG_F & flag_h)
         {
             a = (a - 0x6) & 0xFF;
         }
-        if (REG_F & FLAG_C)
+        if (REG_F & flag_c)
         {
             a -= 0x60;
         }
     }
     else
     {
-        if ((REG_F & FLAG_H) || (a & 0xF) > 0x9)
+        if ((REG_F & flag_h) || (a & 0xF) > 0x9)
         {
             a += 0x6;
         }
-        if ((REG_F & FLAG_C) || a > 0x9F)
+        if ((REG_F & flag_c) || a > 0x9F)
         {
             a += 0x60;
         }
     }
 
-    REG_F &= ~(FLAG_H | FLAG_Z);
+    REG_F &= ~(flag_h | flag_z);
 
     if (a & 0x100)
     {
-        REG_F |= FLAG_C;
+        REG_F |= flag_c;
     }
 
     REG_A = a;
@@ -449,22 +449,22 @@ void CPU::Op_DEC_PtrHL()
     u8 val = ReadMem8(REG_HL);
     val--;
     WriteMem8(REG_HL, val);
-    REG_F &= FLAG_C;
-    REG_F |= ZFlag(val) | FLAG_N;
+    REG_F &= flag_c;
+    REG_F |= ZFlag(val) | flag_n;
     if ((val & 0x0F) == 0x0F)
     {
-        REG_F |= FLAG_H;
+        REG_F |= flag_h;
     }
 }
 
 void CPU::Op_DEC_Reg8(u8& reg)
 {
     reg--;
-    REG_F &= FLAG_C;
-    REG_F |= ZFlag(reg) | FLAG_N;
+    REG_F &= flag_c;
+    REG_F |= ZFlag(reg) | flag_n;
     if ((reg & 0x0F) == 0x0F)
     {
-        REG_F |= FLAG_H;
+        REG_F |= flag_h;
     }
 }
 
@@ -486,7 +486,7 @@ void CPU::Op_EI()
 
 void CPU::Op_HALT()
 {
-    if (!m_ime && ((REG_IE & REG_IF) & INTR_ALL))
+    if (!m_ime && ((REG_IE & REG_IF) & intr_all))
     {
         m_halt_state = HaltState::Bug;
     }
@@ -501,22 +501,22 @@ void CPU::Op_INC_PtrHL()
     u8 val = ReadMem8(REG_HL);
     val++;
     WriteMem8(REG_HL, val);
-    REG_F &= FLAG_C;
+    REG_F &= flag_c;
     REG_F |= ZFlag(val);
     if ((val & 0x0F) == 0)
     {
-        REG_F |= FLAG_H;
+        REG_F |= flag_h;
     }
 }
 
 void CPU::Op_INC_Reg8(u8& reg)
 {
     reg++;
-    REG_F &= FLAG_C;
+    REG_F &= flag_c;
     REG_F |= ZFlag(reg);
     if ((reg & 0x0F) == 0)
     {
-        REG_F |= FLAG_H;
+        REG_F |= flag_h;
     }
 }
 
@@ -534,7 +534,7 @@ void CPU::Op_JP()
 void CPU::Op_JP_NZ()
 {
     u16 target = ReadNextWord();
-    if (!(REG_F & FLAG_Z))
+    if (!(REG_F & flag_z))
     {
         Jump(target);
     }
@@ -543,7 +543,7 @@ void CPU::Op_JP_NZ()
 void CPU::Op_JP_Z()
 {
     u16 target = ReadNextWord();
-    if (REG_F & FLAG_Z)
+    if (REG_F & flag_z)
     {
         Jump(target);
     }
@@ -552,7 +552,7 @@ void CPU::Op_JP_Z()
 void CPU::Op_JP_NC()
 {
     u16 target = ReadNextWord();
-    if (!(REG_F & FLAG_C))
+    if (!(REG_F & flag_c))
     {
         Jump(target);
     }
@@ -561,7 +561,7 @@ void CPU::Op_JP_NC()
 void CPU::Op_JP_C()
 {
     u16 target = ReadNextWord();
-    if (REG_F & FLAG_C)
+    if (REG_F & flag_c)
     {
         Jump(target);
     }
@@ -575,7 +575,7 @@ void CPU::Op_JR()
 void CPU::Op_JR_NZ()
 {
     u16 target = CalcRelativeJumpTarget();
-    if (!(REG_F & FLAG_Z))
+    if (!(REG_F & flag_z))
     {
         Jump(target);
     }
@@ -584,7 +584,7 @@ void CPU::Op_JR_NZ()
 void CPU::Op_JR_Z()
 {
     u16 target = CalcRelativeJumpTarget();
-    if (REG_F & FLAG_Z)
+    if (REG_F & flag_z)
     {
         Jump(target);
     }
@@ -593,7 +593,7 @@ void CPU::Op_JR_Z()
 void CPU::Op_JR_NC()
 {
     u16 target = CalcRelativeJumpTarget();
-    if (!(REG_F & FLAG_C))
+    if (!(REG_F & flag_c))
     {
         Jump(target);
     }
@@ -602,7 +602,7 @@ void CPU::Op_JR_NC()
 void CPU::Op_JR_C()
 {
     u16 target = CalcRelativeJumpTarget();
-    if (REG_F & FLAG_C)
+    if (REG_F & flag_c)
     {
         Jump(target);
     }
@@ -612,10 +612,10 @@ void CPU::Op_LD_HL_SPOffset()
 {
     u8 val = ReadNextByte();
     unsigned int temp = (u8)REG_SP + val;
-    REG_F = (temp > 0xFF) ? FLAG_C : 0;
+    REG_F = (temp > 0xFF) ? flag_c : 0;
     if (((REG_SP ^ val) ^ temp) & 0x10)
     {
-        REG_F |= FLAG_H;
+        REG_F |= flag_h;
     }
     REG_HL = REG_SP + (s8)val;
     AddCycles(1);
@@ -662,7 +662,7 @@ void CPU::Op_RET()
 void CPU::Op_RET_NZ()
 {
     AddCycles(1);
-    if (!(REG_F & FLAG_Z))
+    if (!(REG_F & flag_z))
     {
         Return();
     }
@@ -671,7 +671,7 @@ void CPU::Op_RET_NZ()
 void CPU::Op_RET_Z()
 {
     AddCycles(1);
-    if (REG_F & FLAG_Z)
+    if (REG_F & flag_z)
     {
         Return();
     }
@@ -680,7 +680,7 @@ void CPU::Op_RET_Z()
 void CPU::Op_RET_NC()
 {
     AddCycles(1);
-    if (!(REG_F & FLAG_C))
+    if (!(REG_F & flag_c))
     {
         Return();
     }
@@ -689,7 +689,7 @@ void CPU::Op_RET_NC()
 void CPU::Op_RET_C()
 {
     AddCycles(1);
-    if (REG_F & FLAG_C)
+    if (REG_F & flag_c)
     {
         Return();
     }
@@ -705,30 +705,30 @@ void CPU::Op_RETI()
 void CPU::Op_RL_PtrHL()
 {
     u8 val = ReadMem8(REG_HL);
-    u8 carry = (val & 0x80) >> (7 - FLAG_C_SHIFT);
-    val = (val << 1) | ((REG_F & FLAG_C) >> FLAG_C_SHIFT);
+    u8 carry = (val & 0x80) >> (7 - flag_c_shift);
+    val = (val << 1) | ((REG_F & flag_c) >> flag_c_shift);
     WriteMem8(REG_HL, val);
     REG_F = ZFlag(val) | carry;
 }
 
 void CPU::Op_RL_Reg8(u8& reg)
 {
-    u8 carry = (reg & 0x80) >> (7 - FLAG_C_SHIFT);
-    reg = (reg << 1) | ((REG_F & FLAG_C) >> FLAG_C_SHIFT);
+    u8 carry = (reg & 0x80) >> (7 - flag_c_shift);
+    reg = (reg << 1) | ((REG_F & flag_c) >> flag_c_shift);
     REG_F = ZFlag(reg) | carry;
 }
 
 void CPU::Op_RLA()
 {
-    u8 carry = (REG_A & 0x80) >> (7 - FLAG_C_SHIFT);
-    REG_A = (REG_A << 1) | ((REG_F & FLAG_C) >> FLAG_C_SHIFT);
+    u8 carry = (REG_A & 0x80) >> (7 - flag_c_shift);
+    REG_A = (REG_A << 1) | ((REG_F & flag_c) >> flag_c_shift);
     REG_F = carry;
 }
 
 void CPU::Op_RLC_PtrHL()
 {
     u8 val = ReadMem8(REG_HL);
-    REG_F = (val & 0x80) >> (7 - FLAG_C_SHIFT);
+    REG_F = (val & 0x80) >> (7 - flag_c_shift);
     val = (val << 1) | (val >> 7);
     WriteMem8(REG_HL, val);
     REG_F |= ZFlag(val);
@@ -736,44 +736,44 @@ void CPU::Op_RLC_PtrHL()
 
 void CPU::Op_RLC_Reg8(u8& reg)
 {
-    REG_F = (reg & 0x80) >> (7 - FLAG_C_SHIFT);
+    REG_F = (reg & 0x80) >> (7 - flag_c_shift);
     reg = (reg << 1) | (reg >> 7);
     REG_F |= ZFlag(reg);
 }
 
 void CPU::Op_RLCA()
 {
-    REG_F = (REG_A & 0x80) >> (7 - FLAG_C_SHIFT);
+    REG_F = (REG_A & 0x80) >> (7 - flag_c_shift);
     REG_A = (REG_A << 1) | (REG_A >> 7);
 }
 
 void CPU::Op_RR_PtrHL()
 {
     u8 val = ReadMem8(REG_HL);
-    u8 carry = (val & 0x01) << FLAG_C_SHIFT;
-    val = (val >> 1) | ((REG_F & FLAG_C) << (7 - FLAG_C_SHIFT));
+    u8 carry = (val & 0x01) << flag_c_shift;
+    val = (val >> 1) | ((REG_F & flag_c) << (7 - flag_c_shift));
     WriteMem8(REG_HL, val);
     REG_F = ZFlag(val) | carry;
 }
 
 void CPU::Op_RR_Reg8(u8& reg)
 {
-    u8 carry = (reg & 0x01) << FLAG_C_SHIFT;
-    reg = (reg >> 1) | ((REG_F & FLAG_C) << (7 - FLAG_C_SHIFT));
+    u8 carry = (reg & 0x01) << flag_c_shift;
+    reg = (reg >> 1) | ((REG_F & flag_c) << (7 - flag_c_shift));
     REG_F = ZFlag(reg) | carry;
 }
 
 void CPU::Op_RRA()
 {
-    u8 carry = (REG_A & 0x01) << FLAG_C_SHIFT;
-    REG_A = (REG_A >> 1) | ((REG_F & FLAG_C) << (7 - FLAG_C_SHIFT));
+    u8 carry = (REG_A & 0x01) << flag_c_shift;
+    REG_A = (REG_A >> 1) | ((REG_F & flag_c) << (7 - flag_c_shift));
     REG_F = carry;
 }
 
 void CPU::Op_RRC_PtrHL()
 {
     u8 val = ReadMem8(REG_HL);
-    REG_F = (val & 0x01) << FLAG_C_SHIFT;
+    REG_F = (val & 0x01) << flag_c_shift;
     val = (val >> 1) | (val << 7);
     WriteMem8(REG_HL, val);
     REG_F |= ZFlag(val);
@@ -781,14 +781,14 @@ void CPU::Op_RRC_PtrHL()
 
 void CPU::Op_RRC_Reg8(u8& reg)
 {
-    REG_F = (reg & 0x01) << FLAG_C_SHIFT;
+    REG_F = (reg & 0x01) << flag_c_shift;
     reg = (reg >> 1) | (reg << 7);
     REG_F |= ZFlag(reg);
 }
 
 void CPU::Op_RRCA()
 {
-    REG_F = (REG_A & 0x01) << FLAG_C_SHIFT;
+    REG_F = (REG_A & 0x01) << flag_c_shift;
     REG_A = (REG_A >> 1) | (REG_A << 7);
 }
 
@@ -799,24 +799,24 @@ void CPU::Op_RST(u16 addr)
 
 void CPU::Op_SBC_A(u8 val)
 {
-    int carry = (REG_F & FLAG_C) >> FLAG_C_SHIFT;
+    int carry = (REG_F & flag_c) >> flag_c_shift;
     u8 temp = REG_A - val - carry;
-    REG_F = ZFlag(temp) | FLAG_N;
+    REG_F = ZFlag(temp) | flag_n;
     if (val + carry > REG_A)
     {
-        REG_F |= FLAG_C;
+        REG_F |= flag_c;
     }
     if ((val & 0xF) + carry > (REG_A & 0xF))
     {
-        REG_F |= FLAG_H;
+        REG_F |= flag_h;
     }
     REG_A = temp;
 }
 
 void CPU::Op_SCF()
 {
-    REG_F &= FLAG_Z;
-    REG_F |= FLAG_C;
+    REG_F &= flag_z;
+    REG_F |= flag_c;
 }
 
 void CPU::Op_SET_PtrHL(int bit)
@@ -833,7 +833,7 @@ void CPU::Op_SET_Reg8(int bit, u8& reg)
 void CPU::Op_SLA_PtrHL()
 {
     u8 val = ReadMem8(REG_HL);
-    REG_F = (val & 0x80) >> (7 - FLAG_C_SHIFT);
+    REG_F = (val & 0x80) >> (7 - flag_c_shift);
     val <<= 1;
     WriteMem8(REG_HL, val);
     REG_F |= ZFlag(val);
@@ -841,7 +841,7 @@ void CPU::Op_SLA_PtrHL()
 
 void CPU::Op_SLA_Reg8(u8& reg)
 {
-    REG_F = (reg & 0x80) >> (7 - FLAG_C_SHIFT);
+    REG_F = (reg & 0x80) >> (7 - flag_c_shift);
     reg <<= 1;
     REG_F |= ZFlag(reg);
 }
@@ -849,7 +849,7 @@ void CPU::Op_SLA_Reg8(u8& reg)
 void CPU::Op_SRA_PtrHL()
 {
     u8 val = ReadMem8(REG_HL);
-    REG_F = (val & 0x01) << FLAG_C_SHIFT;
+    REG_F = (val & 0x01) << flag_c_shift;
     val = (val & 0x80) | (val >> 1);
     WriteMem8(REG_HL, val);
     REG_F |= ZFlag(val);
@@ -857,7 +857,7 @@ void CPU::Op_SRA_PtrHL()
 
 void CPU::Op_SRA_Reg8(u8& reg)
 {
-    REG_F = (reg & 0x01) << FLAG_C_SHIFT;
+    REG_F = (reg & 0x01) << flag_c_shift;
     reg = (reg & 0x80) | (reg >> 1);
     REG_F |= ZFlag(reg);
 }
@@ -865,7 +865,7 @@ void CPU::Op_SRA_Reg8(u8& reg)
 void CPU::Op_SRL_PtrHL()
 {
     u8 val = ReadMem8(REG_HL);
-    REG_F = (val & 0x01) << FLAG_C_SHIFT;
+    REG_F = (val & 0x01) << flag_c_shift;
     val >>= 1;
     WriteMem8(REG_HL, val);
     REG_F |= ZFlag(val);
@@ -873,7 +873,7 @@ void CPU::Op_SRL_PtrHL()
 
 void CPU::Op_SRL_Reg8(u8& reg)
 {
-    REG_F = (reg & 0x01) << FLAG_C_SHIFT;
+    REG_F = (reg & 0x01) << flag_c_shift;
     reg >>= 1;
     REG_F |= ZFlag(reg);
 }
@@ -886,14 +886,14 @@ void CPU::Op_STOP()
 void CPU::Op_SUB_A(u8 val)
 {
     u8 temp = REG_A - val;
-    REG_F = ZFlag(temp) | FLAG_N;
+    REG_F = ZFlag(temp) | flag_n;
     if (val > REG_A)
     {
-        REG_F |= FLAG_C;
+        REG_F |= flag_c;
     }
     if ((val & 0xF) > (REG_A & 0xF))
     {
-        REG_F |= FLAG_H;
+        REG_F |= flag_h;
     }
     REG_A = temp;
 }
@@ -935,29 +935,29 @@ void CPU::HandleInterrupts()
 
         if (m_ime)
         {
-            if (ready_interrupts & INTR_VBLANK)
+            if (ready_interrupts & intr_vblank)
             {
-                ClearInterruptFlag(INTR_VBLANK);
+                ClearInterruptFlag(intr_vblank);
                 CallInterruptHandler(0x40);
             }
-            else if (ready_interrupts & INTR_LCDC_STATUS)
+            else if (ready_interrupts & intr_lcdc_status)
             {
-                ClearInterruptFlag(INTR_LCDC_STATUS);
+                ClearInterruptFlag(intr_lcdc_status);
                 CallInterruptHandler(0x48);
             }
-            else if (ready_interrupts & INTR_TIMER)
+            else if (ready_interrupts & intr_timer)
             {
-                ClearInterruptFlag(INTR_TIMER);
+                ClearInterruptFlag(intr_timer);
                 CallInterruptHandler(0x50);
             }
-            else if (ready_interrupts & INTR_SERIAL)
+            else if (ready_interrupts & intr_serial)
             {
-                ClearInterruptFlag(INTR_SERIAL);
+                ClearInterruptFlag(intr_serial);
                 CallInterruptHandler(0x58);
             }
-            else if (ready_interrupts & INTR_JOYPAD)
+            else if (ready_interrupts & intr_joypad)
             {
-                ClearInterruptFlag(INTR_JOYPAD);
+                ClearInterruptFlag(intr_joypad);
                 CallInterruptHandler(0x60);
             }
         }

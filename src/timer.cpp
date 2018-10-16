@@ -24,8 +24,8 @@
 
 const unsigned int clock_cycles_per_machine_cycle = 4;
 
-const unsigned int TAC_CLOCK_SELECT = 0x3;
-const unsigned int TAC_ENABLE = Bit(2);
+const unsigned int tac_clock_select = 0x3;
+const unsigned int tac_enable = Bit(2);
 
 // The timer's selected bit index depends on bits 1:0 of TAC.
 // The resulting clock rate is (4194304 Hz >> (bit_index + 1)).
@@ -33,7 +33,7 @@ const unsigned int TAC_ENABLE = Bit(2);
 // 01: 262144 Hz (3)
 // 10:  65536 Hz (5)
 // 11:  16384 Hz (7)
-static const int s_bit_index_table[] = { 9, 3, 5, 7 };
+const int bit_index_table[] = { 9, 3, 5, 7 };
 
 int Timer::CalcSelectedBitValue()
 {
@@ -43,7 +43,7 @@ int Timer::CalcSelectedBitValue()
 void Timer::Reset()
 {
     m_counter = 0;
-    m_selected_bit_index = s_bit_index_table[0];
+    m_selected_bit_index = bit_index_table[0];
     m_selected_bit_value = 0;
 
     m_reg_tima = 0;
@@ -84,15 +84,15 @@ void Timer::WriteTMA(u8 val)
 
 u8 Timer::ReadTAC()
 {
-    return (m_timer_enable ? TAC_ENABLE : 0) | m_timer_clock_select;
+    return (m_timer_enable ? tac_enable : 0) | m_timer_clock_select;
 }
 
 // TODO: Implement the hardware glitch that can occur when writing to this register.
 void Timer::WriteTAC(u8 val)
 {
-    m_timer_enable = ((val & TAC_ENABLE) != 0);
-    m_timer_clock_select = val & TAC_CLOCK_SELECT;
-    m_selected_bit_index = s_bit_index_table[m_timer_clock_select];
+    m_timer_enable = ((val & tac_enable) != 0);
+    m_timer_clock_select = val & tac_clock_select;
+    m_selected_bit_index = bit_index_table[m_timer_clock_select];
     m_selected_bit_value = CalcSelectedBitValue();
 }
 
@@ -110,7 +110,7 @@ void Timer::Update(unsigned int cycles)
             if (m_reg_tima == 0xFF)
             {
                 m_reg_tima = m_reg_tma;
-                m_machine.GetCPU().SetInterruptFlag(INTR_TIMER);
+                m_machine.GetCPU().SetInterruptFlag(intr_timer);
             }
             else
             {

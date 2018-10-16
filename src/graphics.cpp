@@ -368,7 +368,7 @@ void Graphics::EnterModeHBlank()
     m_cycles_left += hblank_cycles;
     if (m_mode0_intr_enable)
     {
-        m_machine.GetCPU().SetInterruptFlag(INTR_LCDC_STATUS);
+        m_machine.GetCPU().SetInterruptFlag(intr_lcdc_status);
     }
 }
 
@@ -376,10 +376,10 @@ void Graphics::EnterModeVBlank()
 {
     m_display_mode = DisplayMode::VBlank;
     m_cycles_left += scanline_cycles;
-    m_machine.GetCPU().SetInterruptFlag(INTR_VBLANK);
+    m_machine.GetCPU().SetInterruptFlag(intr_vblank);
     if (m_mode1_intr_enable)
     {
-        m_machine.GetCPU().SetInterruptFlag(INTR_LCDC_STATUS);
+        m_machine.GetCPU().SetInterruptFlag(intr_lcdc_status);
     }
     RefreshScreen();
 }
@@ -390,7 +390,7 @@ void Graphics::EnterModeOAMSearch()
     m_cycles_left += oam_search_cycles;
     if (m_mode2_intr_enable)
     {
-        m_machine.GetCPU().SetInterruptFlag(INTR_LCDC_STATUS);
+        m_machine.GetCPU().SetInterruptFlag(intr_lcdc_status);
     }
 }
 
@@ -408,7 +408,7 @@ void Graphics::CompareLYWithLYC()
         m_coincidence_flag = true;
         if (m_coincidence_intr_enable)
         {
-            m_machine.GetCPU().SetInterruptFlag(INTR_LCDC_STATUS);
+            m_machine.GetCPU().SetInterruptFlag(intr_lcdc_status);
         }
     }
     else
@@ -461,7 +461,7 @@ void Graphics::GetBackgroundPixelPlanes(
 
 unsigned int Graphics::GetPixelFromPlanes(u8 plane1, u8 plane2, unsigned int fine_x, bool flip_x)
 {
-    unsigned int shift = flip_x ? fine_x : (k_tile_width - 1) - fine_x;
+    unsigned int shift = flip_x ? fine_x : (tile_width - 1) - fine_x;
     return ((plane1 >> shift) & 1) | (((plane2 >> shift) << 1) & 2);
 }
 

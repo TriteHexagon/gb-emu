@@ -24,12 +24,12 @@
 
 class Machine;
 
-const unsigned INTR_VBLANK = Bit(0);
-const unsigned INTR_LCDC_STATUS = Bit(1);
-const unsigned INTR_TIMER = Bit(2);
-const unsigned INTR_SERIAL = Bit(3);
-const unsigned INTR_JOYPAD = Bit(4);
-const unsigned INTR_ALL = 0x1F;
+const unsigned int intr_vblank = Bit(0);
+const unsigned int intr_lcdc_status = Bit(1);
+const unsigned int intr_timer = Bit(2);
+const unsigned int intr_serial = Bit(3);
+const unsigned int intr_joypad = Bit(4);
+const unsigned int intr_all = 0x1F;
 
 class CPU
 {

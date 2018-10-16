@@ -23,7 +23,7 @@
 #include "common.h"
 #include "disassemble.h"
 
-static const char s_asm_table[0x100][15] =
+const char asm_table[0x100][15] =
 {
     "nop",            // 0x00
     "ld bc,W",        // 0x01
@@ -283,7 +283,7 @@ static const char s_asm_table[0x100][15] =
     "rst $38"         // 0xFF
 };
 
-static const char s_asm_table_cb[0x100][11] =
+const char asm_table_cb[0x100][11] =
 {
     "rlc b",      // 0x00
     "rlc c",      // 0x01
@@ -543,7 +543,7 @@ static const char s_asm_table_cb[0x100][11] =
     "set 7,a"     // 0xFF
 };
 
-static const int s_opcode_to_instruction_length[0x100] =
+const int opcode_to_instruction_length[0x100] =
 {
     1, // 0x00
     3, // 0x01
@@ -805,7 +805,7 @@ static const int s_opcode_to_instruction_length[0x100] =
 
 int GetInstructionLengthByOpcode(u8 opcode)
 {
-    return s_opcode_to_instruction_length[opcode];
+    return opcode_to_instruction_length[opcode];
 }
 
 void AppendNum(std::vector<char>& buffer, s32 val, int num_digits, bool include_plus)
@@ -844,10 +844,10 @@ std::string Disassemble(u16 instruction_addr, const std::array<u8, 3>& instructi
 
     if (opcode == 0xCB)
     {
-        return s_asm_table_cb[instruction[1]];
+        return asm_table_cb[instruction[1]];
     }
 
-    const char* format = s_asm_table[opcode];
+    const char* format = asm_table[opcode];
 
     for (int i = 0; format[i]; i++)
     {
