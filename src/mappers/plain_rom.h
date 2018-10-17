@@ -28,7 +28,7 @@
 class PlainROM : public Mapper
 {
 public:
-    PlainROM(ROMInfo& rom_info);
+    explicit PlainROM(ROMInfo& rom_info);
     virtual void Reset() override;
     virtual u8 Read(u16 addr) override;
     virtual void Write(u16 addr, u8 val) override;

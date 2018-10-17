@@ -28,7 +28,7 @@
 class MBC1 : public Mapper
 {
 public:
-    MBC1(ROMInfo& rom_info);
+    explicit MBC1(ROMInfo& rom_info);
     virtual void Reset() override;
     virtual u8 Read(u16 addr) override;
     virtual void Write(u16 addr, u8 val) override;
