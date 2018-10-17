@@ -38,7 +38,7 @@ public:
     {
     }
 
-    void LoadROM(std::vector<u8> rom);
+    void LoadROM(ROMInfo& rom_info);
     void Reset();
     void Run(unsigned int cycles);
 

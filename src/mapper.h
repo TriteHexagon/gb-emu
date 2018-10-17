@@ -20,36 +20,13 @@
 
 #pragma once
 
-#include <vector>
-#include <memory>
 #include "common.h"
-#include "mapper.h"
-#include "rom.h"
 
-class Machine;
-
-class Memory
+class Mapper
 {
 public:
-    explicit Memory(Machine& machine) : m_machine(machine)
-    {
-    }
-
-    void LoadROM(ROMInfo& rom_info);
-    void Reset();
-    u8 Read(u16 addr);
-    void Write(u16 addr, u8 val);
-
-private:
-    u8 ReadMMIO(u16 addr);
-    u8 Read_Fnnn(u16 addr);
-    void WriteMMIO(u16 addr, u8 val);
-    void Write_Fnnn(u16 addr, u8 val);
-
-    Machine& m_machine;
-
-    u8 m_wram[0x2000]; // work RAM
-    u8 m_hram[0x7F];   // high RAM
-
-    std::unique_ptr<Mapper> m_mapper;
+    virtual ~Mapper() = default;
+    virtual void Reset() = 0;
+    virtual u8 Read(u16 addr) = 0;
+    virtual void Write(u16 addr, u8 val) = 0;
 };

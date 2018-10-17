@@ -2,8 +2,8 @@ BINARY_NAME := gb_emu
 
 CXXFLAGS := -O2 -flto -Wall -Wextra
 
-SOURCES := $(wildcard src/*.cpp)
-HEADERS := $(wildcard src/*.h)
+SOURCES := $(wildcard src/*.cpp) $(wildcard src/mappers/*.cpp)
+HEADERS := $(wildcard src/*.h) $(wildcard src/mappers/*.h)
 
 .PHONY: clean
 

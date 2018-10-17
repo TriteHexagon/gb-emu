@@ -22,6 +22,7 @@
 #include <stdlib.h>
 #include <algorithm>
 #include <vector>
+#include <string>
 #include "common.h"
 #include "machine.h"
 #include "SDL.h"
@@ -36,26 +37,48 @@ int main(int argc, char** argv)
         return 1;
     }
 
-    char* rom_file_name = argv[1];
+    std::string rom_file_name = argv[1];
 
-    FILE* rom_file = fopen(rom_file_name, "rb");
-    fseek(rom_file, 0, SEEK_END);
-    long file_size = ftell(rom_file);
-    size_t buffer_size = std::max(file_size, 0x8000L);
-    rewind(rom_file);
-    std::vector<u8> rom(buffer_size, 0);
+    ROMInfo rom_info;
+    LoadROMStatus status = LoadROM(rom_file_name, rom_info);
 
-    if (fread(rom.data(), file_size, 1, rom_file) != 1)
+    switch (status)
     {
-        perror(nullptr);
+    case LoadROMStatus::OK:
+        // no error
+        break;
+    case LoadROMStatus::ROMFileOpenFailed:
+        fprintf(stderr, "Unable to open ROM file\n");
+        return 1;
+    case LoadROMStatus::ROMFileReadFailed:
+        fprintf(stderr, "Unable to read ROM file\n");
+        return 1;
+    case LoadROMStatus::ROMTooSmall:
+        fprintf(stderr, "ROM file is too small (min: 32KB)\n");
+        return 1;
+    case LoadROMStatus::ROMTooLarge:
+        fprintf(stderr, "ROM file is too large (max: 8MB)\n");
+        return 1;
+    case LoadROMStatus::ROMSizeNotPowerOfTwo:
+        fprintf(stderr, "ROM file size is a not power of 2\n");
+        return 1;
+    case LoadROMStatus::ROMSizeMismatch:
+        fprintf(stderr, "ROM file size doesn't match the header\n");
+        return 1;
+    case LoadROMStatus::RAMInfoInconsistent:
+        fprintf(stderr, "catridge type and RAM size are inconsistent\n");
+        return 1;
+    case LoadROMStatus::UnknownCartridgeType:
+        fprintf(stderr, "unknown cartridge type: 0x%02X\n", rom_info.cart_type);
+        return 1;
+    case LoadROMStatus::UnknownRAMSize:
+        fprintf(stderr, "unknown RAM size: 0x%02X\n", rom_info.ram_size_index);
         return 1;
     }
 
-    fclose(rom_file);
-
     Machine machine;
 
-    machine.LoadROM(std::move(rom));
+    machine.LoadROM(rom_info);
     machine.Reset();
 
     const int screen_scale = 2;

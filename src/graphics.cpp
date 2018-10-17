@@ -245,7 +245,7 @@ void Graphics::WriteLYC(u8 val)
 void Graphics::WriteDMA(u8 val)
 {
     // TODO: Implement accurately.
-    for (size_t i = 0; i < m_oam.size(); i++)
+    for (u16 i = 0; i < m_oam.size(); i++)
     {
         m_oam[i] = m_machine.GetMemory().Read(((u16)val << 8) + i);
     }

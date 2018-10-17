@@ -25,16 +25,31 @@
 #include "memory.h"
 #include "cpu.h"
 #include "machine.h"
+#include "mappers/plain_rom.h"
+#include "mappers/mbc1.h"
+#include "mappers/mbc3.h"
 
-void Memory::LoadROM(std::vector<u8> rom)
+void Memory::LoadROM(ROMInfo& rom_info)
 {
-    m_rom = std::move(rom);
+    switch (rom_info.mapper_type)
+    {
+    case MapperType::PlainROM:
+        m_mapper = std::make_unique<PlainROM>(rom_info);
+        break;
+    case MapperType::MBC1:
+        m_mapper = std::make_unique<MBC1>(rom_info);
+        break;
+    case MapperType::MBC3:
+        m_mapper = std::make_unique<MBC3>(rom_info);
+        break;
+    }
 }
 
 void Memory::Reset()
 {
     memset(m_wram, 0, sizeof(m_wram));
     memset(m_hram, 0, sizeof(m_hram));
+    m_mapper->Reset();
 }
 
 u8 Memory::ReadMMIO(u16 addr)
@@ -125,13 +140,13 @@ u8 Memory::Read(u16 addr)
     case 0x5:
     case 0x6:
     case 0x7:
-        return m_rom[addr];
+        return m_mapper->Read(addr);
     case 0x8:
     case 0x9:
         return m_machine.GetGraphics().ReadVRAM(addr & 0x1FFF);
     case 0xA:
     case 0xB:
-        return m_sram[addr & 0x1FFF];
+        return m_mapper->Read(addr);
     case 0xC:
     case 0xD:
     case 0xE:
@@ -247,7 +262,7 @@ void Memory::Write(u16 addr, u8 val)
     case 0x5:
     case 0x6:
     case 0x7:
-        m_rom[addr] = val;
+        m_mapper->Write(addr, val);
         break;
     case 0x8:
     case 0x9:
@@ -255,7 +270,7 @@ void Memory::Write(u16 addr, u8 val)
         break;
     case 0xA:
     case 0xB:
-        m_sram[addr & 0x1FFF] = val;
+        m_mapper->Write(addr, val);
         break;
     case 0xC:
     case 0xD:

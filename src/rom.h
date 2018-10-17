@@ -20,36 +20,43 @@
 
 #pragma once
 
+#include <string>
 #include <vector>
 #include <memory>
 #include "common.h"
-#include "mapper.h"
-#include "rom.h"
 
-class Machine;
-
-class Memory
+enum class LoadROMStatus
 {
-public:
-    explicit Memory(Machine& machine) : m_machine(machine)
-    {
-    }
-
-    void LoadROM(ROMInfo& rom_info);
-    void Reset();
-    u8 Read(u16 addr);
-    void Write(u16 addr, u8 val);
-
-private:
-    u8 ReadMMIO(u16 addr);
-    u8 Read_Fnnn(u16 addr);
-    void WriteMMIO(u16 addr, u8 val);
-    void Write_Fnnn(u16 addr, u8 val);
-
-    Machine& m_machine;
-
-    u8 m_wram[0x2000]; // work RAM
-    u8 m_hram[0x7F];   // high RAM
-
-    std::unique_ptr<Mapper> m_mapper;
+    OK,
+    ROMFileOpenFailed,
+    ROMFileReadFailed,
+    ROMTooSmall,
+    ROMTooLarge,
+    ROMSizeNotPowerOfTwo,
+    ROMSizeMismatch,
+    RAMInfoInconsistent,
+    UnknownCartridgeType,
+    UnknownRAMSize,
 };
+
+enum class MapperType
+{
+    PlainROM,
+    MBC1,
+    MBC3,
+};
+
+struct ROMInfo
+{
+    MapperType mapper_type;
+    std::unique_ptr<std::vector<u8>> rom;
+    u32 ram_size;
+    bool is_gbc_aware;
+    bool is_sgb_aware;
+    bool has_battery;
+    bool has_rtc;
+    u8 cart_type;
+    u8 ram_size_index;
+};
+
+LoadROMStatus LoadROM(std::string file_name, ROMInfo& info);

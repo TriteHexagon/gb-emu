@@ -21,9 +21,9 @@
 #include "common.h"
 #include "machine.h"
 
-void Machine::LoadROM(std::vector<u8> rom)
+void Machine::LoadROM(ROMInfo& rom_info)
 {
-    m_memory.LoadROM(std::move(rom));
+    m_memory.LoadROM(rom_info);
 }
 
 void Machine::Reset()

@@ -18,38 +18,36 @@
 // OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN
 // THE SOFTWARE.
 
-#pragma once
+#include "plain_rom.h"
 
-#include <vector>
-#include <memory>
-#include "common.h"
-#include "mapper.h"
-#include "rom.h"
-
-class Machine;
-
-class Memory
+PlainROM::PlainROM(ROMInfo& rom_info) :
+    m_rom(std::move(*rom_info.rom)),
+    m_ram(rom_info.ram_size, 0)
 {
-public:
-    explicit Memory(Machine& machine) : m_machine(machine)
+}
+
+void PlainROM::Reset()
+{
+}
+
+u8 PlainROM::Read(u16 addr)
+{
+    if (addr < 0x8000)
     {
+        return m_rom[addr];
+    }
+    else if (addr >= 0xA000 && addr < 0xC000 && m_ram.size() != 0)
+    {
+        return m_ram[(addr - 0xA000) & (m_ram.size() - 1)];
     }
 
-    void LoadROM(ROMInfo& rom_info);
-    void Reset();
-    u8 Read(u16 addr);
-    void Write(u16 addr, u8 val);
+    return 0;
+}
 
-private:
-    u8 ReadMMIO(u16 addr);
-    u8 Read_Fnnn(u16 addr);
-    void WriteMMIO(u16 addr, u8 val);
-    void Write_Fnnn(u16 addr, u8 val);
-
-    Machine& m_machine;
-
-    u8 m_wram[0x2000]; // work RAM
-    u8 m_hram[0x7F];   // high RAM
-
-    std::unique_ptr<Mapper> m_mapper;
-};
+void PlainROM::Write(u16 addr, u8 val)
+{
+    if (addr >= 0xA000 && addr < 0xC000 && m_ram.size() != 0)
+    {
+        m_ram[(addr - 0xA000) & (m_ram.size() - 1)] = val;
+    }
+}
