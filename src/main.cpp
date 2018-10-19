@@ -227,7 +227,7 @@ int main(int argc, char** argv)
 
     MainLoop(renderer, texture, machine);
 
-    if (machine.GetRAM().size() != 0)
+    if (rom_info.has_battery)
     {
         SaveRAMStatus save_ram_status = SaveRAM(rom_info.save_file_name, machine.GetRAM());
 
