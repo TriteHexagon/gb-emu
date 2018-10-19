@@ -23,24 +23,24 @@
 
 void Machine::LoadROM(ROMInfo& rom_info)
 {
-    m_memory.LoadROM(rom_info);
+    m_devices.memory.LoadROM(rom_info);
 }
 
 void Machine::Reset()
 {
-    m_cpu.Reset();
-    m_memory.Reset();
-    m_timer.Reset();
-    m_graphics.Reset();
-    m_joypad.Reset();
+    m_devices.cpu.Reset();
+    m_devices.memory.Reset();
+    m_devices.timer.Reset();
+    m_devices.graphics.Reset();
+    m_devices.joypad.Reset();
 }
 
 void Machine::Run(unsigned int cycles)
 {
-    m_cpu.Run(cycles);
+    m_devices.cpu.Run(cycles);
 }
 
 void Machine::SetKeyState(u8 dpad_keys, u8 button_keys)
 {
-    m_joypad.SetKeyState(dpad_keys, button_keys);
+    m_devices.joypad.SetKeyState(dpad_keys, button_keys);
 }

@@ -22,12 +22,12 @@
 
 #include "common.h"
 
-class Machine;
+struct Devices;
 
 class Timer
 {
 public:
-    explicit Timer(Machine& machine) : m_machine(machine)
+    explicit Timer(Devices& devices) : m_devices(devices)
     {
     }
 
@@ -50,7 +50,7 @@ public:
 private:
     int CalcSelectedBitValue();
 
-    Machine& m_machine;
+    Devices& m_devices;
 
     u16 m_counter;
     int m_selected_bit_index;

@@ -270,7 +270,7 @@ void Graphics::WriteDMA(u8 val)
     // TODO: Implement accurately.
     for (u16 i = 0; i < m_oam.size(); i++)
     {
-        m_oam[i] = m_machine.GetMemory().Read(((u16)val << 8) + i);
+        m_oam[i] = m_devices.memory.Read(((u16)val << 8) + i);
     }
 }
 
@@ -391,7 +391,7 @@ void Graphics::EnterModeHBlank()
     m_cycles_left += hblank_cycles;
     if (m_mode0_intr_enable)
     {
-        m_machine.GetCPU().SetInterruptFlag(intr_lcdc_status);
+        m_devices.cpu.SetInterruptFlag(intr_lcdc_status);
     }
 }
 
@@ -399,10 +399,10 @@ void Graphics::EnterModeVBlank()
 {
     m_display_mode = DisplayMode::VBlank;
     m_cycles_left += scanline_cycles;
-    m_machine.GetCPU().SetInterruptFlag(intr_vblank);
+    m_devices.cpu.SetInterruptFlag(intr_vblank);
     if (m_mode1_intr_enable)
     {
-        m_machine.GetCPU().SetInterruptFlag(intr_lcdc_status);
+        m_devices.cpu.SetInterruptFlag(intr_lcdc_status);
     }
     RefreshScreen();
 }
@@ -413,7 +413,7 @@ void Graphics::EnterModeOAMSearch()
     m_cycles_left += oam_search_cycles;
     if (m_mode2_intr_enable)
     {
-        m_machine.GetCPU().SetInterruptFlag(intr_lcdc_status);
+        m_devices.cpu.SetInterruptFlag(intr_lcdc_status);
     }
 }
 
@@ -431,7 +431,7 @@ void Graphics::CompareLYWithLYC()
         m_coincidence_flag = true;
         if (m_coincidence_intr_enable)
         {
-            m_machine.GetCPU().SetInterruptFlag(intr_lcdc_status);
+            m_devices.cpu.SetInterruptFlag(intr_lcdc_status);
         }
     }
     else

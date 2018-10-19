@@ -26,12 +26,12 @@
 #include "mapper.h"
 #include "rom.h"
 
-class Machine;
+struct Devices;
 
 class Memory
 {
 public:
-    explicit Memory(Machine& machine) : m_machine(machine)
+    explicit Memory(Devices& devices) : m_devices(devices)
     {
     }
 
@@ -46,7 +46,7 @@ private:
     void WriteMMIO(u16 addr, u8 val);
     void Write_Fnnn(u16 addr, u8 val);
 
-    Machine& m_machine;
+    Devices& m_devices;
 
     u8 m_wram[0x2000]; // work RAM
     u8 m_hram[0x7F];   // high RAM

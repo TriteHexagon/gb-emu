@@ -22,7 +22,7 @@
 
 #include "common.h"
 
-class Machine;
+struct Devices;
 
 const unsigned int intr_vblank = Bit(0);
 const unsigned int intr_lcdc_status = Bit(1);
@@ -34,7 +34,7 @@ const unsigned int intr_all = 0x1F;
 class CPU
 {
 public:
-    explicit CPU(Machine& machine) : m_machine(machine)
+    explicit CPU(Devices& devices) : m_devices(devices)
     {
     }
 
@@ -173,7 +173,7 @@ private:
     void ExecInstructionPrefixCB();
     bool ExecInstruction();
 
-    Machine& m_machine;
+    Devices& m_devices;
 
     RegisterPair m_reg_af, m_reg_bc, m_reg_de, m_reg_hl; // general registers
     u16 m_reg_sp; // stack pointer

@@ -28,17 +28,26 @@
 #include "graphics.h"
 #include "joypad.h"
 
-class Machine
+struct Devices
 {
-public:
-    Machine() :
-        m_cpu(*this),
-        m_memory(*this),
-        m_timer(*this),
-        m_graphics(*this)
+    Devices() :
+        cpu(*this),
+        memory(*this),
+        timer(*this),
+        graphics(*this)
     {
     }
 
+    CPU cpu;
+    Memory memory;
+    Timer timer;
+    Graphics graphics;
+    Joypad joypad;
+};
+
+class Machine
+{
+public:
     void LoadROM(ROMInfo& rom_info);
     void Reset();
     void Run(unsigned int cycles);
@@ -46,38 +55,9 @@ public:
 
     const FramebufferArray& GetFramebuffer() const
     {
-        return m_graphics.GetFramebuffer();
-    }
-
-    CPU& GetCPU()
-    {
-        return m_cpu;
-    }
-
-    Memory& GetMemory()
-    {
-        return m_memory;
-    }
-
-    Timer& GetTimer()
-    {
-        return m_timer;
-    }
-
-    Graphics& GetGraphics()
-    {
-        return m_graphics;
-    }
-
-    Joypad& GetJoypad()
-    {
-        return m_joypad;
+        return m_devices.graphics.GetFramebuffer();
     }
 
 private:
-    CPU m_cpu;
-    Memory m_memory;
-    Timer m_timer;
-    Graphics m_graphics;
-    Joypad m_joypad;
+    Devices m_devices;
 };

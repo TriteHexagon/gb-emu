@@ -104,13 +104,13 @@ void CPU::Run(unsigned int cycles)
             }
 
 #ifdef GBEMU_TRACE_LOG
-            u8 opcode = m_machine.GetMemory().Read(REG_PC);
+            u8 opcode = m_devices.memory.Read(REG_PC);
             int instruction_length = GetInstructionLengthByOpcode(opcode);
             std::array<u8, 3> instruction;
             instruction[0] = opcode;
             for (int i = 1; i < instruction_length; i++)
             {
-                instruction[i] = m_machine.GetMemory().Read(REG_PC + i);
+                instruction[i] = m_devices.memory.Read(REG_PC + i);
             }
             std::string disasm = Disassemble(REG_PC, instruction);
             printf("%04X: %s\n", REG_PC, disasm.c_str());
@@ -162,37 +162,37 @@ void CPU::AddCycles(unsigned int cycles)
 {
     m_instruction_cycles += cycles;
 
-    m_machine.GetTimer().Update(cycles);
-    m_machine.GetGraphics().Update(cycles);
+    m_devices.timer.Update(cycles);
+    m_devices.graphics.Update(cycles);
 }
 
 u8 CPU::ReadMem8(u16 addr)
 {
-    u8 val = m_machine.GetMemory().Read(addr);
+    u8 val = m_devices.memory.Read(addr);
     AddCycles(1);
     return val;
 }
 
 u16 CPU::ReadMem16(u16 addr)
 {
-    u16 val = m_machine.GetMemory().Read(addr);
+    u16 val = m_devices.memory.Read(addr);
     AddCycles(1);
-    val |= (u16)m_machine.GetMemory().Read(addr + 1) << 8;
+    val |= (u16)m_devices.memory.Read(addr + 1) << 8;
     AddCycles(1);
     return val;
 }
 
 void CPU::WriteMem8(u16 addr, u8 val)
 {
-    m_machine.GetMemory().Write(addr, val);
+    m_devices.memory.Write(addr, val);
     AddCycles(1);
 }
 
 void CPU::WriteMem16(u16 addr, u16 val)
 {
-    m_machine.GetMemory().Write(addr, (u8)val);
+    m_devices.memory.Write(addr, (u8)val);
     AddCycles(1);
-    m_machine.GetMemory().Write(addr + 1, val >> 8);
+    m_devices.memory.Write(addr + 1, val >> 8);
     AddCycles(1);
 }
 
