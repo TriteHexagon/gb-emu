@@ -50,6 +50,8 @@ public:
     void SetInterruptFlag(u16 mask);
     void ClearInterruptFlag(u16 mask);
 
+    void SetTraceLogEnabled(bool enabled);
+
 private:
     union RegisterPair
     {
@@ -189,4 +191,6 @@ private:
     unsigned int m_instruction_cycles;
 
     int m_cycles_left;
+
+    bool m_trace_log_enabled;
 };

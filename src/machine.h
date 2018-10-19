@@ -52,6 +52,7 @@ public:
     void Reset();
     void Run(unsigned int cycles);
     void SetKeyState(u8 dpad_keys, u8 button_keys);
+    void SetTraceLogEnabled(bool enabled);
 
     const FramebufferArray& GetFramebuffer() const
     {

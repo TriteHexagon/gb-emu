@@ -44,3 +44,8 @@ void Machine::SetKeyState(u8 dpad_keys, u8 button_keys)
 {
     m_devices.joypad.SetKeyState(dpad_keys, button_keys);
 }
+
+void Machine::SetTraceLogEnabled(bool enabled)
+{
+    m_devices.cpu.SetTraceLogEnabled(enabled);
+}

@@ -19,6 +19,7 @@
 // THE SOFTWARE.
 
 #include <stdio.h>
+#include <stdlib.h>
 #include "common.h"
 #include "cpu.h"
 #include "machine.h"
@@ -79,6 +80,8 @@ void CPU::Reset()
     REG_IE = 0;
 
     m_cycles_left = 0;
+
+    m_trace_log_enabled = false;
 }
 
 void CPU::Run(unsigned int cycles)
@@ -103,20 +106,25 @@ void CPU::Run(unsigned int cycles)
                 m_ime_state = IMEState::Stable;
             }
 
-#ifdef GBEMU_TRACE_LOG
-            u8 opcode = m_devices.memory.Read(REG_PC);
-            int instruction_length = GetInstructionLengthByOpcode(opcode);
-            std::array<u8, 3> instruction;
-            instruction[0] = opcode;
-            for (int i = 1; i < instruction_length; i++)
+            if (m_trace_log_enabled)
             {
-                instruction[i] = m_devices.memory.Read(REG_PC + i);
+                u8 opcode = m_devices.memory.Read(REG_PC);
+                int instruction_length = GetInstructionLengthByOpcode(opcode);
+                std::array<u8, 3> instruction;
+                instruction[0] = opcode;
+                for (int i = 1; i < instruction_length; i++)
+                {
+                    instruction[i] = m_devices.memory.Read(REG_PC + i);
+                }
+                std::string disasm = Disassemble(REG_PC, instruction);
+                printf("%04X: %s\n", REG_PC, disasm.c_str());
             }
-            std::string disasm = Disassemble(REG_PC, instruction);
-            printf("%04X: %s\n", REG_PC, disasm.c_str());
-#endif // GBEMU_TRACE_LOG
 
-            ExecInstruction();
+            if (!ExecInstruction())
+            {
+                fprintf(stderr, "Illegal opcode at %04X\n", REG_PC - 1);
+                exit(1);
+            }
 
             if (m_ime_state == IMEState::EnableRequested)
             {
@@ -156,6 +164,11 @@ void CPU::SetInterruptFlag(u16 mask)
 void CPU::ClearInterruptFlag(u16 mask)
 {
     REG_IF &= ~mask;
+}
+
+void CPU::SetTraceLogEnabled(bool enabled)
+{
+    m_trace_log_enabled = enabled;
 }
 
 void CPU::AddCycles(unsigned int cycles)

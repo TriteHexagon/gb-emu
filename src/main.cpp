@@ -86,9 +86,20 @@ void MainLoop(SDL_Renderer *renderer, SDL_Texture *texture, Machine& machine)
 
         while (SDL_PollEvent(&event))
         {
-            if (event.type == SDL_QUIT)
+            switch (event.type)
             {
+            case SDL_QUIT:
                 return;
+            case SDL_KEYDOWN:
+                switch (event.key.keysym.sym)
+                {
+                case SDLK_t:
+                    machine.SetTraceLogEnabled(true);
+                    break;
+                case SDLK_y:
+                    machine.SetTraceLogEnabled(false);
+                    break;
+                }
             }
         }
 
@@ -233,6 +244,6 @@ int main(int argc, char** argv)
             return 1;
         }
     }
-    
+
     return 0;
 }
