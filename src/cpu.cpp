@@ -959,7 +959,10 @@ void CPU::HandleInterrupts()
 
     if (ready_interrupts != 0)
     {
-        m_halt_state = HaltState::Off;
+        if (m_halt_state != HaltState::Bug)
+        {
+            m_halt_state = HaltState::Off;
+        }
 
         if (m_ime)
         {
