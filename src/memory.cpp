@@ -47,8 +47,8 @@ void Memory::LoadROM(ROMInfo& rom_info)
 
 void Memory::Reset()
 {
-    memset(m_wram, 0, sizeof(m_wram));
-    memset(m_hram, 0, sizeof(m_hram));
+    m_wram = {};
+    m_hram = {};
     m_mapper->Reset();
 }
 

@@ -20,6 +20,7 @@
 
 #pragma once
 
+#include <array>
 #include <vector>
 #include <memory>
 #include "common.h"
@@ -48,8 +49,8 @@ private:
 
     Devices& m_devices;
 
-    u8 m_wram[0x2000]; // work RAM
-    u8 m_hram[0x7F];   // high RAM
+    std::array<u8, 0x2000> m_wram; // work RAM
+    std::array<u8, 0x7F> m_hram;   // high RAM
 
     std::unique_ptr<Mapper> m_mapper;
 };
