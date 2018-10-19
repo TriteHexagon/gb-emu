@@ -18,9 +18,11 @@
 // OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN
 // THE SOFTWARE.
 
+#include <stdio.h>
 #include "common.h"
 #include "cpu.h"
 #include "machine.h"
+#include "disassemble.h"
 
 #ifdef GBEMU_BIG_ENDIAN
 #define LO_REG 1
@@ -100,6 +102,19 @@ void CPU::Run(unsigned int cycles)
                 m_ime = true;
                 m_ime_state = IMEState::Stable;
             }
+
+#ifdef GBEMU_TRACE_LOG
+            u8 opcode = m_machine.GetMemory().Read(REG_PC);
+            int instruction_length = GetInstructionLengthByOpcode(opcode);
+            std::array<u8, 3> instruction;
+            instruction[0] = opcode;
+            for (int i = 1; i < instruction_length; i++)
+            {
+                instruction[i] = m_machine.GetMemory().Read(REG_PC + i);
+            }
+            std::string disasm = Disassemble(REG_PC, instruction);
+            printf("%04X: %s\n", REG_PC, disasm.c_str());
+#endif // GBEMU_TRACE_LOG
 
             ExecInstruction();
 

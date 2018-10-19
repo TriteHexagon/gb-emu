@@ -28,6 +28,8 @@ MBC3::MBC3(ROMInfo& rom_info) :
 
 void MBC3::Reset()
 {
+    m_rom_map = nullptr;
+    m_ram_map = nullptr;
     m_rom_bank = 1;
     m_ram_bank = 0;
     m_ram_enable = false;
@@ -83,6 +85,10 @@ void MBC3::UpdateMapping()
 {
     u32 rom_addr = (m_rom_bank * 0x4000) & (m_rom.size() - 1);
     m_rom_map = &m_rom[rom_addr];
-    u32 ram_addr = (m_ram_bank * 0x2000) & (m_ram.size() - 1);
-    m_ram_map = &m_ram[ram_addr];
+
+    if (m_ram.size() != 0)
+    {
+        u32 ram_addr = (m_ram_bank * 0x2000) & (m_ram.size() - 1);
+        m_ram_map = &m_ram[ram_addr];
+    }
 }

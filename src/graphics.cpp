@@ -18,6 +18,7 @@
 // OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN
 // THE SOFTWARE.
 
+#include <algorithm>
 #include "common.h"
 #include "graphics.h"
 #include "machine.h"
@@ -48,22 +49,43 @@ const int oam_search_cycles = 20;
 const int pixel_transfer_cycles = 43;
 const int scanline_cycles = 114;
 
+const int total_sprites = 40;
+const int per_line_sprite_limit = 10;
+const int oam_entry_size = 4;
+
+// OAM entry offsets
+const int oam_y = 0;
+const int oam_x = 1;
+const int oam_tile_num = 2;
+const int oam_attr = 3;
+
+// OAM attributes
+
+const int oam_attr_dmg_pal_shift = 4;
+const int oam_attr_flip_x_shift = 5;
+const int oam_attr_flip_y_shift = 6;
+const int oam_attr_priority_shift = 7;
+
+const int oam_attr_flip_x = Bit(oam_attr_flip_x_shift);
+const int oam_attr_flip_y = Bit(oam_attr_flip_y_shift);
+const int oam_attr_priority = Bit(oam_attr_priority_shift);
+
 void Graphics::Reset()
 {
     m_vram = {};
     m_oam = {};
 
-    m_bg_enable = false;
+    m_bg_enable = true;
     m_sprite_enable = false;
     m_sprite_size = SpriteSize::SPRITE_SIZE_8X8;
     m_bg_tilemap_select = BGTilemapSelect::BG_TILEMAP_9800;
-    m_pattern_table_select = PatternTableSelect::PATTERN_TABLE_8800;
+    m_pattern_table_select = PatternTableSelect::PATTERN_TABLE_8000;
     m_window_enable = false;
     m_window_tilemap_select = WindowTilemapSelect::WINDOW_TILEMAP_9800;
-    m_display_enable = false;
+    m_display_enable = true;
 
     m_display_mode = DisplayMode::HBlank;
-    m_coincidence_flag = false;
+    m_coincidence_flag = true;
     m_mode0_intr_enable = false;
     m_mode1_intr_enable = false;
     m_mode2_intr_enable = false;
@@ -76,8 +98,7 @@ void Graphics::Reset()
     m_lyc = 0;
 
     m_bgp = {};
-    m_obp0 = {};
-    m_obp1 = {};
+    m_obp = {};
 
     m_wy = 0;
     m_wx = 0;
@@ -90,6 +111,8 @@ void Graphics::Reset()
     WhiteOutFramebuffers();
 
     m_current_framebuffer = 0;
+
+    m_bg_color_indices = {};
 }
 
 u8 Graphics::ReadVRAM(u16 addr)
@@ -276,22 +299,22 @@ void Graphics::WriteBGP(u8 val)
 
 u8 Graphics::ReadOBP0()
 {
-    return ReadPalette(m_obp0);
+    return ReadPalette(m_obp[0]);
 }
 
 void Graphics::WriteOBP0(u8 val)
 {
-    WritePalette(m_obp0, val);
+    WritePalette(m_obp[0], val);
 }
 
 u8 Graphics::ReadOBP1()
 {
-    return ReadPalette(m_obp1);
+    return ReadPalette(m_obp[1]);
 }
 
 void Graphics::WriteOBP1(u8 val)
 {
-    WritePalette(m_obp1, val);
+    WritePalette(m_obp[1], val);
 }
 
 u8 Graphics::ReadWY()
@@ -419,13 +442,7 @@ void Graphics::CompareLYWithLYC()
 
 void Graphics::WhiteOutFramebuffers()
 {
-    for (auto fb_it = std::begin(m_framebuffers); fb_it != std::end(m_framebuffers); ++fb_it)
-    {
-        for (auto pixel_it = std::begin(*fb_it); pixel_it != std::end(*fb_it); ++pixel_it)
-        {
-            *pixel_it = 0;
-        }
-    }
+    m_framebuffers = {};
 }
 
 void Graphics::RefreshScreen()
@@ -437,7 +454,7 @@ void Graphics::GetBackgroundPixelPlanes(
     u8* tilemap,
     unsigned int tile_x,
     unsigned int tile_y,
-    unsigned int fine_y,
+    unsigned int tile_fine_y,
     u8& plane1,
     u8& plane2)
 {
@@ -447,12 +464,12 @@ void Graphics::GetBackgroundPixelPlanes(
     if (m_pattern_table_select)
     {
         // 8000-8FFF
-        offset = (tile_num * 16) + (fine_y * 2);
+        offset = (tile_num * 16) + (tile_fine_y * 2);
     }
     else
     {
         // 8800-97FF
-        offset = 0x1000 + ((s8)tile_num * 16) + (fine_y * 2);
+        offset = 0x1000 + ((s8)tile_num * 16) + (tile_fine_y * 2);
     }
 
     plane1 = m_vram[offset];
@@ -465,26 +482,25 @@ unsigned int Graphics::GetPixelFromPlanes(u8 plane1, u8 plane2, unsigned int fin
     return ((plane1 >> shift) & 1) | (((plane2 >> shift) << 1) & 2);
 }
 
-void Graphics::DrawBackground(FramebufferArray& fb)
+void Graphics::DrawBackground_Helper(
+    FramebufferArray& fb,
+    u8* tilemap,
+    unsigned int x,
+    unsigned int tile_x,
+    unsigned int tile_fine_x,
+    unsigned int tile_y,
+    unsigned int tile_fine_y)
 {
-    unsigned int x = 0;
-    unsigned int line = (m_ly + m_scy) & 0xFF;
-
-    unsigned int tile_x = m_scx >> 3;
-    unsigned int tile_fine_x = m_scx & 7;
-
-    unsigned int tile_y = line >> 3;
-    unsigned int tile_fine_y = line & 7;
-
     for (;;)
     {
         u8 plane1, plane2;
-        GetBackgroundPixelPlanes(m_bg_tilemap, tile_x, tile_y, tile_fine_y, plane1, plane2);
+        GetBackgroundPixelPlanes(tilemap, tile_x, tile_y, tile_fine_y, plane1, plane2);
 
         for (;;)
         {
             unsigned int pixel = GetPixelFromPlanes(plane1, plane2, tile_fine_x, false);
 
+            m_bg_color_indices[x] = pixel;
             fb[(m_ly * lcd_width) + x] = m_bgp[pixel];
 
             if (x == lcd_width - 1)
@@ -514,11 +530,53 @@ void Graphics::DrawBackground(FramebufferArray& fb)
     }
 }
 
+void Graphics::DrawBackground(FramebufferArray& fb)
+{
+    unsigned int line = (m_ly + m_scy) & 0xFF;
+
+    unsigned int tile_x = m_scx >> 3;
+    unsigned int tile_fine_x = m_scx & 7;
+
+    unsigned int tile_y = line >> 3;
+    unsigned int tile_fine_y = line & 7;
+
+    DrawBackground_Helper(fb, m_bg_tilemap, 0, tile_x, tile_fine_x, tile_y, tile_fine_y);
+}
+
+void Graphics::DrawWindow(FramebufferArray& fb)
+{
+    int window_line = m_ly - m_wy;
+
+    if (window_line < 0)
+    {
+        return;
+    }
+
+    int window_x = m_wx - 7;
+
+    if (window_x >= 160)
+    {
+        return;
+    }
+
+    int x = (window_x > 0) ? window_x : 0;
+    unsigned int window_x_offset = x - window_x;
+
+    unsigned int tile_x = window_x_offset >> 3;
+    unsigned int tile_fine_x = window_x_offset & 7;
+
+    unsigned int tile_y = window_line >> 3;
+    unsigned int tile_fine_y = window_line & 7;
+
+    DrawBackground_Helper(fb, m_window_tilemap, x, tile_x, tile_fine_x, tile_y, tile_fine_y);
+}
+
 void Graphics::WhiteOutScanline(FramebufferArray& fb)
 {
     for (int x = 0; x < lcd_width; x++)
     {
         fb[(m_ly * lcd_width) + x] = 0;
+        m_bg_color_indices[x] = 0;
     }
 }
 
@@ -533,5 +591,101 @@ void Graphics::DrawScanline()
     else
     {
         WhiteOutScanline(fb);
+    }
+
+    if (m_window_enable)
+    {
+        DrawWindow(fb);
+    }
+
+    if (m_sprite_enable)
+    {
+        DrawSprites(fb);
+    }
+}
+
+void Graphics::DrawSprites(FramebufferArray& fb)
+{
+    const int sprite_height = (m_sprite_size == SPRITE_SIZE_8X16) ? 16 : 8;
+
+    int count = 0;
+    std::array<int, total_sprites> potentially_visible_sprites;
+
+    for (int i = 0; i < total_sprites; i++)
+    {
+        int sprite_y = m_oam[i * oam_entry_size + oam_y] - 16;
+
+        if (m_ly >= sprite_y && m_ly < sprite_y + sprite_height)
+        {
+            potentially_visible_sprites[count++] = i;
+        }
+    }
+
+    std::stable_sort(
+        potentially_visible_sprites.begin(),
+        potentially_visible_sprites.begin() + count,
+        [this](int i, int j)
+        {
+            return m_oam[i * oam_entry_size + oam_x] < m_oam[j * oam_entry_size + oam_x];
+        });
+
+    for (int i = std::min(count, per_line_sprite_limit) - 1; i >= 0; i--)
+    {
+        unsigned int sprite_index = potentially_visible_sprites[i];
+        unsigned int oam_offset = sprite_index * oam_entry_size;
+
+        int sprite_y = m_oam[oam_offset + oam_y] - 16;
+        int sprite_x = m_oam[oam_offset + oam_x] - 8;
+        u8 tile_num = m_oam[oam_offset + oam_tile_num];
+        u8 attr = m_oam[oam_offset + oam_attr];
+
+        if (m_sprite_size == SPRITE_SIZE_8X16)
+        {
+            tile_num &= ~1;
+        }
+
+        std::array<u8, 4>& dmg_pal = m_obp[(attr >> oam_attr_dmg_pal_shift) & 1];
+        bool flip_x = ((attr & oam_attr_flip_x) != 0);
+        bool flip_y = ((attr & oam_attr_flip_y) != 0);
+        bool low_priority = ((attr & oam_attr_priority) != 0);
+
+        unsigned int sprite_line = m_ly - sprite_y;
+
+        if (flip_y)
+        {
+            sprite_line = (sprite_height - 1) - sprite_line;
+        }
+
+        unsigned int vram_offset = (tile_num * 16) + (sprite_line * 2);
+        u8 plane1 = m_vram[vram_offset];
+        u8 plane2 = m_vram[vram_offset + 1];
+
+        int x;
+        int fine_x;
+
+        if (sprite_x < 0)
+        {
+            x = 0;
+            fine_x = -sprite_x;
+        }
+        else
+        {
+            x = sprite_x;
+            fine_x = 0;
+        }
+
+
+        while (x < lcd_width && fine_x < tile_width)
+        {
+            unsigned int pixel = GetPixelFromPlanes(plane1, plane2, fine_x, flip_x);
+
+            if (pixel != 0 && (!low_priority || m_bg_color_indices[x] == 0))
+            {
+                fb[(m_ly * lcd_width) + x] = dmg_pal[pixel];
+            }
+
+            x++;
+            fine_x++;
+        }
     }
 }

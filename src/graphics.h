@@ -135,11 +135,21 @@ private:
         u8* tilemap,
         unsigned int tile_x,
         unsigned int tile_y,
-        unsigned int fine_y,
+        unsigned int tile_fine_y,
         u8& plane1,
         u8& plane2);
     unsigned int GetPixelFromPlanes(u8 plane1, u8 plane2, unsigned int fine_x, bool flip_x);
+    void DrawBackground_Helper(
+        FramebufferArray& fb,
+        u8* tilemap,
+        unsigned int x,
+        unsigned int tile_x,
+        unsigned int tile_fine_x,
+        unsigned int tile_y,
+        unsigned int tile_fine_y);
     void DrawBackground(FramebufferArray& fb);
+    void DrawWindow(FramebufferArray& fb);
+    void DrawSprites(FramebufferArray& fb);
     void WhiteOutScanline(FramebufferArray& fb);
     void DrawScanline();
 
@@ -173,8 +183,7 @@ private:
     u8 m_lyc;
 
     std::array<u8, 4> m_bgp;
-    std::array<u8, 4> m_obp0;
-    std::array<u8, 4> m_obp1;
+    std::array<std::array<u8, 4>, 2> m_obp;
 
     u8 m_wy;
     u8 m_wx;
@@ -186,4 +195,6 @@ private:
 
     std::array<FramebufferArray, 2> m_framebuffers;
     int m_current_framebuffer;
+
+    std::array<int, lcd_width> m_bg_color_indices;
 };

@@ -163,7 +163,6 @@ void Memory::WriteMMIO(u16 addr, u8 val)
     switch (addr)
     {
     case 0xFF01: // SB
-        putchar(val); // for CPU test output
         break;
     case 0xFF04: // DIV
         m_machine.GetTimer().WriteDIV();
