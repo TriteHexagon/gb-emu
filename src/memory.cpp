@@ -56,6 +56,8 @@ u8 Memory::ReadMMIO(u16 addr)
 {
     switch (addr)
     {
+    case 0xFF00: // JOYP
+        return m_machine.GetJoypad().ReadJOYP();
     case 0xFF04: // DIV
         return m_machine.GetTimer().ReadDIV();
     case 0xFF05: // TIMA
@@ -162,6 +164,9 @@ void Memory::WriteMMIO(u16 addr, u8 val)
 {
     switch (addr)
     {
+    case 0xFF00: // JOYP
+        m_machine.GetJoypad().WriteJOYP(val);
+        break;
     case 0xFF01: // SB
         break;
     case 0xFF04: // DIV

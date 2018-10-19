@@ -18,29 +18,33 @@
 // OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN
 // THE SOFTWARE.
 
+#pragma once
+
 #include "common.h"
-#include "machine.h"
 
-void Machine::LoadROM(ROMInfo& rom_info)
-{
-    m_memory.LoadROM(rom_info);
-}
+const unsigned int joyp_button_a = Bit(0);
+const unsigned int joyp_button_b = Bit(1);
+const unsigned int joyp_button_select = Bit(2);
+const unsigned int joyp_button_start = Bit(3);
 
-void Machine::Reset()
-{
-    m_cpu.Reset();
-    m_memory.Reset();
-    m_timer.Reset();
-    m_graphics.Reset();
-    m_joypad.Reset();
-}
+const unsigned int joyp_dpad_right = Bit(0);
+const unsigned int joyp_dpad_left = Bit(1);
+const unsigned int joyp_dpad_up = Bit(2);
+const unsigned int joyp_dpad_down = Bit(3);
 
-void Machine::Run(unsigned int cycles)
+class Joypad
 {
-    m_cpu.Run(cycles);
-}
+public:
+    void Reset();
 
-void Machine::SetKeyState(u8 dpad_keys, u8 button_keys)
-{
-    m_joypad.SetKeyState(dpad_keys, button_keys);
-}
+    u8 ReadJOYP();
+    void WriteJOYP(u8 val);
+
+    void SetKeyState(u8 dpad_keys, u8 button_keys);
+
+private:
+    bool m_dpad_keys_enable;
+    bool m_button_keys_enable;
+    u8 m_dpad_keys;
+    u8 m_button_keys;
+};

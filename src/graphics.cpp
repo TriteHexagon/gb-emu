@@ -39,7 +39,7 @@ const int stat_mode1_intr_enable_shift = 4;
 const int stat_mode2_intr_enable_shift = 5;
 const int stat_coincidence_intr_enable_shift = 6;
 
-const int stat_display_mode_mask = 0x3;
+const unsigned int stat_display_mode_mask = 0x3;
 
 const int vblank_start = 144;
 const int vblank_end = 153;
@@ -66,9 +66,9 @@ const int oam_attr_flip_x_shift = 5;
 const int oam_attr_flip_y_shift = 6;
 const int oam_attr_priority_shift = 7;
 
-const int oam_attr_flip_x = Bit(oam_attr_flip_x_shift);
-const int oam_attr_flip_y = Bit(oam_attr_flip_y_shift);
-const int oam_attr_priority = Bit(oam_attr_priority_shift);
+const unsigned int oam_attr_flip_x = Bit(oam_attr_flip_x_shift);
+const unsigned int oam_attr_flip_y = Bit(oam_attr_flip_y_shift);
+const unsigned int oam_attr_priority = Bit(oam_attr_priority_shift);
 
 void Graphics::Reset()
 {

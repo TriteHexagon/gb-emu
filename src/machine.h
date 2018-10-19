@@ -26,6 +26,7 @@
 #include "memory.h"
 #include "timer.h"
 #include "graphics.h"
+#include "joypad.h"
 
 class Machine
 {
@@ -41,6 +42,7 @@ public:
     void LoadROM(ROMInfo& rom_info);
     void Reset();
     void Run(unsigned int cycles);
+    void SetKeyState(u8 dpad_keys, u8 button_keys);
 
     const FramebufferArray& GetFramebuffer() const
     {
@@ -67,9 +69,15 @@ public:
         return m_graphics;
     }
 
+    Joypad& GetJoypad()
+    {
+        return m_joypad;
+    }
+
 private:
     CPU m_cpu;
     Memory m_memory;
     Timer m_timer;
     Graphics m_graphics;
+    Joypad m_joypad;
 };

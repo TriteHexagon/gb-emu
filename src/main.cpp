@@ -29,6 +29,56 @@
 
 const std::array<Uint32, 4> rgb_table = { 0xFFFFFF, 0xAAAAAA, 0x555555, 0x000000 };
 
+void UpdateJoypad(Machine& machine)
+{
+    const Uint8* state = SDL_GetKeyboardState(nullptr);
+
+    u8 dpad_keys = 0;
+    u8 button_keys = 0;
+
+    if (state[SDL_SCANCODE_RIGHT])
+    {
+        dpad_keys |= joyp_dpad_right;
+    }
+
+    if (state[SDL_SCANCODE_LEFT])
+    {
+        dpad_keys |= joyp_dpad_left;
+    }
+
+    if (state[SDL_SCANCODE_UP])
+    {
+        dpad_keys |= joyp_dpad_up;
+    }
+
+    if (state[SDL_SCANCODE_DOWN])
+    {
+        dpad_keys |= joyp_dpad_down;
+    }
+
+    if (state[SDL_SCANCODE_X])
+    {
+        button_keys |= joyp_button_a;
+    }
+
+    if (state[SDL_SCANCODE_Z])
+    {
+        button_keys |= joyp_button_b;
+    }
+
+    if (state[SDL_SCANCODE_BACKSPACE])
+    {
+        button_keys |= joyp_button_select;
+    }
+
+    if (state[SDL_SCANCODE_RETURN])
+    {
+        button_keys |= joyp_button_start;
+    }
+
+    machine.SetKeyState(dpad_keys, button_keys);
+}
+
 int main(int argc, char** argv)
 {
     if (argc != 2)
@@ -133,6 +183,8 @@ int main(int argc, char** argv)
                 return 0;
             }
         }
+
+        UpdateJoypad(machine);
 
         machine.Run(17556);
 

@@ -19,28 +19,46 @@
 // THE SOFTWARE.
 
 #include "common.h"
-#include "machine.h"
+#include "joypad.h"
 
-void Machine::LoadROM(ROMInfo& rom_info)
+const unsigned int dpad_disable = Bit(4);
+const unsigned int button_disable = Bit(5);
+
+void Joypad::Reset()
 {
-    m_memory.LoadROM(rom_info);
+    m_dpad_keys_enable = false;
+    m_button_keys_enable = false;
+    m_dpad_keys = 0;
+    m_button_keys = 0;
 }
 
-void Machine::Reset()
+u8 Joypad::ReadJOYP()
 {
-    m_cpu.Reset();
-    m_memory.Reset();
-    m_timer.Reset();
-    m_graphics.Reset();
-    m_joypad.Reset();
+    u8 val = 0xFF;
+
+    if (m_dpad_keys_enable)
+    {
+        val &= ~dpad_disable;
+        val &= ~m_dpad_keys;
+    }
+
+    if (m_button_keys_enable)
+    {
+        val &= ~button_disable;
+        val &= ~m_button_keys;
+    }
+
+    return val;
 }
 
-void Machine::Run(unsigned int cycles)
+void Joypad::WriteJOYP(u8 val)
 {
-    m_cpu.Run(cycles);
+    m_dpad_keys_enable = ((val & dpad_disable) == 0);
+    m_button_keys_enable = ((val & button_disable) == 0);
 }
 
-void Machine::SetKeyState(u8 dpad_keys, u8 button_keys)
+void Joypad::SetKeyState(u8 dpad_keys, u8 button_keys)
 {
-    m_joypad.SetKeyState(dpad_keys, button_keys);
+    m_dpad_keys = dpad_keys;
+    m_button_keys = button_keys;
 }
