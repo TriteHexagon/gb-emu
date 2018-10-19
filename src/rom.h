@@ -35,8 +35,17 @@ enum class LoadROMStatus
     ROMSizeNotPowerOfTwo,
     ROMSizeMismatch,
     RAMInfoInconsistent,
+    RAMFileReadFailed,
+    RAMFileWrongSize,
     UnknownCartridgeType,
     UnknownRAMSize,
+};
+
+enum class SaveRAMStatus
+{
+    OK,
+    FileOpenFailed,
+    FileWriteFailed,
 };
 
 enum class MapperType
@@ -50,13 +59,15 @@ struct ROMInfo
 {
     MapperType mapper_type;
     std::unique_ptr<std::vector<u8>> rom;
-    u32 ram_size;
+    std::unique_ptr<std::vector<u8>> ram;
     bool is_gbc_aware;
     bool is_sgb_aware;
     bool has_battery;
     bool has_rtc;
     u8 cart_type;
     u8 ram_size_index;
+    std::string save_file_name;
 };
 
-LoadROMStatus LoadROM(std::string file_name, ROMInfo& info);
+LoadROMStatus LoadROM(const std::string& file_name, ROMInfo& info);
+SaveRAMStatus SaveRAM(const std::string& file_name, const std::vector<u8>& ram);

@@ -20,7 +20,6 @@
 
 #include <stdio.h>
 #include <stdlib.h>
-#include <algorithm>
 #include <vector>
 #include <string>
 #include "common.h"
@@ -79,6 +78,43 @@ void UpdateJoypad(Machine& machine)
     machine.SetKeyState(dpad_keys, button_keys);
 }
 
+void MainLoop(SDL_Renderer *renderer, SDL_Texture *texture, Machine& machine)
+{
+    for (;;)
+    {
+        SDL_Event event;
+
+        while (SDL_PollEvent(&event))
+        {
+            if (event.type == SDL_QUIT)
+            {
+                return;
+            }
+        }
+
+        UpdateJoypad(machine);
+
+        machine.Run(17556);
+
+        const FramebufferArray& fb = machine.GetFramebuffer();
+
+        std::array<Uint32, lcd_width * lcd_height> pixels;
+
+        for (int y = 0; y < lcd_height; y++)
+        {
+            for (int x = 0; x < lcd_width; x++)
+            {
+                u8 color_index = fb[(y * lcd_width) + x];
+                pixels[(y * lcd_width) + x] = rgb_table[color_index];
+            }
+        }
+
+        SDL_UpdateTexture(texture, NULL, pixels.data(), lcd_width * sizeof(Uint32));
+        SDL_RenderCopy(renderer, texture, NULL, NULL);
+        SDL_RenderPresent(renderer);
+    }
+}
+
 int main(int argc, char** argv)
 {
     if (argc != 2)
@@ -90,9 +126,9 @@ int main(int argc, char** argv)
     std::string rom_file_name = argv[1];
 
     ROMInfo rom_info;
-    LoadROMStatus status = LoadROM(rom_file_name, rom_info);
+    LoadROMStatus load_rom_status = LoadROM(rom_file_name, rom_info);
 
-    switch (status)
+    switch (load_rom_status)
     {
     case LoadROMStatus::OK:
         // no error
@@ -117,6 +153,12 @@ int main(int argc, char** argv)
         return 1;
     case LoadROMStatus::RAMInfoInconsistent:
         fprintf(stderr, "catridge type and RAM size are inconsistent\n");
+        return 1;
+    case LoadROMStatus::RAMFileReadFailed:
+        fprintf(stderr, "Unable to read save file\n");
+        return 1;
+    case LoadROMStatus::RAMFileWrongSize:
+        fprintf(stderr, "Save file is the wrong size\n");
         return 1;
     case LoadROMStatus::UnknownCartridgeType:
         fprintf(stderr, "unknown cartridge type: 0x%02X\n", rom_info.cart_type);
@@ -172,39 +214,25 @@ int main(int argc, char** argv)
         return 1;
     }
 
-    for (;;)
+    MainLoop(renderer, texture, machine);
+
+    if (machine.GetRAM().size() != 0)
     {
-        SDL_Event event;
+        SaveRAMStatus save_ram_status = SaveRAM(rom_info.save_file_name, machine.GetRAM());
 
-        while (SDL_PollEvent(&event))
+        switch (save_ram_status)
         {
-            if (event.type == SDL_QUIT)
-            {
-                return 0;
-            }
+        case SaveRAMStatus::OK:
+            // no error
+            break;
+        case SaveRAMStatus::FileOpenFailed:
+            fprintf(stderr, "Unable to open save file for writing\n");
+            return 1;
+        case SaveRAMStatus::FileWriteFailed:
+            fprintf(stderr, "Unable to write save file\n");
+            return 1;
         }
-
-        UpdateJoypad(machine);
-
-        machine.Run(17556);
-
-        const FramebufferArray& fb = machine.GetFramebuffer();
-
-        std::array<Uint32, lcd_width * lcd_height> pixels;
-
-        for (int y = 0; y < lcd_height; y++)
-        {
-            for (int x = 0; x < lcd_width; x++)
-            {
-                u8 color_index = fb[(y * lcd_width) + x];
-                pixels[(y * lcd_width) + x] = rgb_table[color_index];
-            }
-        }
-
-        SDL_UpdateTexture(texture, NULL, pixels.data(), lcd_width * sizeof(Uint32));
-        SDL_RenderCopy(renderer, texture, NULL, NULL);
-        SDL_RenderPresent(renderer);
     }
-
+    
     return 0;
 }

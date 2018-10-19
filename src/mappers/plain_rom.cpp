@@ -22,7 +22,7 @@
 
 PlainROM::PlainROM(ROMInfo& rom_info) :
     m_rom(std::move(*rom_info.rom)),
-    m_ram(rom_info.ram_size, 0)
+    m_ram(std::move(*rom_info.ram))
 {
 }
 

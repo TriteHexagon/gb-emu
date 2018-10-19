@@ -20,6 +20,7 @@
 
 #pragma once
 
+#include <vector>
 #include "common.h"
 
 class Mapper
@@ -29,4 +30,5 @@ public:
     virtual void Reset() = 0;
     virtual u8 Read(u16 addr) = 0;
     virtual void Write(u16 addr, u8 val) = 0;
+    virtual const std::vector<u8>& GetRAM() = 0;
 };

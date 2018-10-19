@@ -23,7 +23,7 @@
 #include "common.h"
 #include "rom.h"
 
-LoadROMStatus LoadROM(std::string file_name, ROMInfo& info)
+LoadROMStatus LoadROM(const std::string& file_name, ROMInfo& info)
 {
     static const std::array<u32, 6> ram_size_table = { 0, 0x800, 0x2000, 0x8000, 0x20000, 0x10000 };
     const long min_rom_size = 0x8000; // 32KB
@@ -141,12 +141,83 @@ LoadROMStatus LoadROM(std::string file_name, ROMInfo& info)
         return LoadROMStatus::UnknownRAMSize;
     }
 
-    info.ram_size = ram_size_table[info.ram_size_index];
+    u32 ram_size = ram_size_table[info.ram_size_index];
 
-    if (has_ram != (info.ram_size != 0))
+    if (has_ram != (ram_size != 0))
     {
         return LoadROMStatus::RAMInfoInconsistent;
     }
 
+    info.ram = std::make_unique<std::vector<u8>>(ram_size, 0);
+
+    if (info.has_battery)
+    {
+        size_t slash_pos = file_name.find_last_of('/');
+
+#ifdef _WIN32
+        size_t backslash_pos = file_name.find_last_of('\\');
+
+        if (slash_pos == std::string::npos
+            || (backslash_pos != std::string::npos && backslash_pos > slash_pos))
+        {
+            slash_pos = backslash_pos;
+        }
+#endif // _WIN32
+
+        size_t dot_pos = file_name.find_last_of('.');
+
+        if (dot_pos != std::string::npos && (slash_pos == std::string::npos || slash_pos < dot_pos))
+        {
+            info.save_file_name = file_name.substr(0, dot_pos) + ".sav";
+        }
+        else
+        {
+            info.save_file_name = file_name + ".sav";
+        }
+
+        FILE* save_file = fopen(info.save_file_name.c_str(), "rb");
+
+        if (save_file != nullptr)
+        {
+            fseek(save_file, 0, SEEK_END);
+
+            if (ftell(save_file) != ram_size)
+            {
+                fclose(save_file);
+                return LoadROMStatus::RAMFileWrongSize;
+            }
+
+            rewind(save_file);
+
+            if (fread(info.ram->data(), ram_size, 1, save_file) != 1)
+            {
+                fclose(save_file);
+                return LoadROMStatus::RAMFileReadFailed;
+            }
+
+            fclose(save_file);
+        }
+    }
+
     return LoadROMStatus::OK;
+}
+
+SaveRAMStatus SaveRAM(const std::string& file_name, const std::vector<u8>& ram)
+{
+    FILE* save_file = fopen(file_name.c_str(), "wb");
+
+    if (save_file == nullptr)
+    {
+        return SaveRAMStatus::FileOpenFailed;
+    }
+
+    if (fwrite(ram.data(), ram.size(), 1, save_file) != 1)
+    {
+        fclose(save_file);
+        return SaveRAMStatus::FileWriteFailed;
+    }
+
+    fclose(save_file);
+
+    return SaveRAMStatus::OK;
 }

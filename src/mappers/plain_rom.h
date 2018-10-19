@@ -33,6 +33,11 @@ public:
     virtual u8 Read(u16 addr) override;
     virtual void Write(u16 addr, u8 val) override;
 
+    virtual const std::vector<u8>& GetRAM() override
+    {
+        return m_ram;
+    }
+
 private:
     std::vector<u8> m_rom;
     std::vector<u8> m_ram;

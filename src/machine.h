@@ -58,6 +58,11 @@ public:
         return m_devices.graphics.GetFramebuffer();
     }
 
+    const std::vector<u8>& GetRAM()
+    {
+        return m_devices.memory.GetRAM();
+    }
+
 private:
     Devices m_devices;
 };

@@ -21,7 +21,6 @@
 #pragma once
 
 #include <array>
-#include <vector>
 #include <memory>
 #include "common.h"
 #include "mapper.h"
@@ -40,6 +39,11 @@ public:
     void Reset();
     u8 Read(u16 addr);
     void Write(u16 addr, u8 val);
+
+    const std::vector<u8>& GetRAM()
+    {
+        return m_mapper->GetRAM();
+    }
 
 private:
     u8 ReadMMIO(u16 addr);
