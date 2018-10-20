@@ -111,6 +111,12 @@ LoadROMStatus LoadROM(const std::string& file_name, ROMInfo& info)
         has_ram = true;
         info.has_battery = true;
         break;
+    case 0x10:
+        info.mapper_type = MapperType::MBC3;
+        has_ram = true;
+        info.has_battery = true;
+        info.has_rtc = true;
+        break;
     case 0x11:
         info.mapper_type = MapperType::MBC3;
         break;
