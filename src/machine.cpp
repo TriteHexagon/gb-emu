@@ -21,9 +21,10 @@
 #include "common.h"
 #include "machine.h"
 
-void Machine::LoadROM(ROMInfo& rom_info)
+Machine::Machine(ROMInfo& rom_info)
 {
     m_devices.memory.LoadROM(rom_info);
+    Reset();
 }
 
 void Machine::Reset()

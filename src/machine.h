@@ -48,7 +48,7 @@ struct Devices
 class Machine
 {
 public:
-    void LoadROM(ROMInfo& rom_info);
+    Machine(ROMInfo& rom_info);
     void Reset();
     void Run(unsigned int cycles);
     void SetKeyState(u8 dpad_keys, u8 button_keys);

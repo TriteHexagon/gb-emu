@@ -179,10 +179,7 @@ int main(int argc, char** argv)
         return 1;
     }
 
-    Machine machine;
-
-    machine.LoadROM(rom_info);
-    machine.Reset();
+    Machine machine(rom_info);
 
     const int screen_scale = 2;
     const int screen_width = lcd_width * screen_scale;
