@@ -26,8 +26,6 @@
 #include "machine.h"
 #include "SDL.h"
 
-const std::array<Uint32, 4> rgb_table = { 0xFFFFFF, 0xAAAAAA, 0x555555, 0x000000 };
-
 void UpdateJoypad(Machine& machine)
 {
     const Uint8* state = SDL_GetKeyboardState(nullptr);
@@ -105,22 +103,9 @@ void MainLoop(SDL_Renderer *renderer, SDL_Texture *texture, Machine& machine)
 
         UpdateJoypad(machine);
 
-        machine.Run(17556);
+        machine.Run(17556 * 2);
 
-        const FramebufferArray& fb = machine.GetFramebuffer();
-
-        std::array<Uint32, lcd_width * lcd_height> pixels;
-
-        for (int y = 0; y < lcd_height; y++)
-        {
-            for (int x = 0; x < lcd_width; x++)
-            {
-                u8 color_index = fb[(y * lcd_width) + x];
-                pixels[(y * lcd_width) + x] = rgb_table[color_index];
-            }
-        }
-
-        SDL_UpdateTexture(texture, NULL, pixels.data(), lcd_width * sizeof(Uint32));
+        SDL_UpdateTexture(texture, NULL, machine.GetFramebuffer().data(), lcd_width * sizeof(Uint32));
         SDL_RenderCopy(renderer, texture, NULL, NULL);
         SDL_RenderPresent(renderer);
     }

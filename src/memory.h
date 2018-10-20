@@ -46,6 +46,9 @@ public:
     }
 
 private:
+    u8 ReadSVBK();
+    void WriteSVBK(u8 val);
+
     u8 ReadMMIO(u16 addr);
     u8 Read_Fnnn(u16 addr);
     void WriteMMIO(u16 addr, u8 val);
@@ -53,8 +56,11 @@ private:
 
     Hardware& m_hw;
 
-    std::array<u8, 0x2000> m_wram; // work RAM
+    std::array<u8, 0x8000> m_wram; // work RAM
     std::array<u8, 0x7F> m_hram;   // high RAM
+
+    u8* m_wram_map;
+    int m_wram_bank;
 
     std::unique_ptr<Mapper> m_mapper;
 };

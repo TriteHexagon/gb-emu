@@ -41,13 +41,20 @@ const int stat_coincidence_intr_enable_shift = 6;
 
 const unsigned int stat_display_mode_mask = 0x3;
 
+const int cgb_pal_index_shift = 0;
+const int cgb_pal_auto_increment_shift = 7;
+
+const unsigned int cgb_pal_index_mask = 0x3F;
+
+const unsigned int vbk_mask = 0x1;
+
 const int vblank_start = 144;
 const int vblank_end = 153;
 
-const int hblank_cycles = 51;
-const int oam_search_cycles = 20;
-const int pixel_transfer_cycles = 43;
-const int scanline_cycles = 114;
+const int hblank_cycles = 51 * 2;
+const int oam_search_cycles = 20 * 2;
+const int pixel_transfer_cycles = 43 * 2;
+const int scanline_cycles = 114 * 2;
 
 const int total_sprites = 40;
 const int per_line_sprite_limit = 10;
@@ -61,19 +68,43 @@ const int oam_attr = 3;
 
 // OAM attributes
 
+const int oam_attr_cgb_pal_shift = 0;
+const int oam_attr_vram_bank_shift = 3;
 const int oam_attr_dmg_pal_shift = 4;
 const int oam_attr_flip_x_shift = 5;
 const int oam_attr_flip_y_shift = 6;
 const int oam_attr_priority_shift = 7;
 
+const unsigned int oam_attr_cgb_pal_mask = 0x7;
+const unsigned int oam_attr_vram_bank_mask = 0x1;
+const unsigned int oam_attr_dmg_pal_mask = 0x1;
+
 const unsigned int oam_attr_flip_x = Bit(oam_attr_flip_x_shift);
 const unsigned int oam_attr_flip_y = Bit(oam_attr_flip_y_shift);
 const unsigned int oam_attr_priority = Bit(oam_attr_priority_shift);
+
+// BG attributes
+
+const int bg_attr_pal_shift = 0;
+const int bg_attr_vram_bank_shift = 3;
+const int bg_attr_flip_x_shift = 5;
+const int bg_attr_flip_y_shift = 6;
+const int bg_attr_priority_shift = 7;
+
+const unsigned int bg_attr_pal_mask = 0x7;
+const unsigned int bg_attr_vram_bank_mask = 0x1;
+
+const unsigned int bg_attr_flip_x = Bit(bg_attr_flip_x_shift);
+const unsigned int bg_attr_flip_y = Bit(bg_attr_flip_y_shift);
+const unsigned int bg_attr_priority = Bit(bg_attr_priority_shift);
 
 void Graphics::Reset()
 {
     m_vram = {};
     m_oam = {};
+
+    m_vram_map = &m_vram[0];
+    m_vram_bank = 0;
 
     m_bg_enable = true;
     m_sprite_enable = false;
@@ -103,8 +134,17 @@ void Graphics::Reset()
     m_wy = 0;
     m_wx = 0;
 
+    m_bcp_auto_increment = false;
+    m_bcp_index = 0;
+    m_bcp.fill(0xFF);
+    m_ocp_auto_increment = false;
+    m_ocp_index = 0;
+    m_ocp.fill(0xFF);
+
     m_bg_tilemap = &m_vram[0x1800];
+    m_bg_attr_table = &m_vram[0x3800];
     m_window_tilemap = &m_vram[0x1800];
+    m_window_attr_table = &m_vram[0x3800];
 
     m_cycles_left = 0;
 
@@ -113,13 +153,14 @@ void Graphics::Reset()
     m_current_framebuffer = 0;
 
     m_bg_color_indices = {};
+    m_bg_high_priority = {};
 }
 
 u8 Graphics::ReadVRAM(u16 addr)
 {
     if (m_display_mode != DisplayMode::PixelTransfer)
     {
-        return m_vram[addr];
+        return m_vram_map[addr];
     }
 
     return 0xFF;
@@ -129,7 +170,7 @@ void Graphics::WriteVRAM(u16 addr, u8 val)
 {
     if (m_display_mode != DisplayMode::PixelTransfer)
     {
-        m_vram[addr] = val;
+        m_vram_map[addr] = val;
     }
 }
 
@@ -180,11 +221,11 @@ void Graphics::WriteLCDC(u8 val)
     {
         if (m_display_enable)
         {
-            m_ly = 0;
             EnterModeOAMSearch();
         }
         else
         {
+            m_ly = 0;
             m_display_mode = DisplayMode::HBlank;
             WhiteOutFramebuffers();
         }
@@ -193,19 +234,23 @@ void Graphics::WriteLCDC(u8 val)
     if (m_bg_tilemap_select == BG_TILEMAP_9800)
     {
         m_bg_tilemap = &m_vram[0x1800];
+        m_bg_attr_table = &m_vram[0x3800];
     }
     else
     {
         m_bg_tilemap = &m_vram[0x1C00];
+        m_bg_attr_table = &m_vram[0x3C00];
     }
 
     if (m_window_tilemap_select == WINDOW_TILEMAP_9800)
     {
         m_window_tilemap = &m_vram[0x1800];
+        m_window_attr_table = &m_vram[0x3800];
     }
     else
     {
         m_window_tilemap = &m_vram[0x1C00];
+        m_window_attr_table = &m_vram[0x3C00];
     }
 }
 
@@ -337,6 +382,85 @@ void Graphics::WriteWX(u8 val)
     m_wx = val;
 }
 
+u8 Graphics::ReadBCPS()
+{
+    return (m_bcp_auto_increment << cgb_pal_auto_increment_shift) | 0x40 | (m_bcp_index << cgb_pal_index_shift);
+}
+
+void Graphics::WriteBCPS(u8 val)
+{
+    m_bcp_index = (val >> cgb_pal_index_shift) & cgb_pal_index_mask;
+    m_bcp_auto_increment = (val >> cgb_pal_auto_increment_shift) & 1;
+}
+
+u8 Graphics::ReadBCPD()
+{
+    if (m_display_mode != DisplayMode::PixelTransfer)
+    {
+        return m_bcp[m_bcp_index];
+    }
+
+    return 0xFF;
+}
+
+void Graphics::WriteBCPD(u8 val)
+{
+    if (m_display_mode != DisplayMode::PixelTransfer)
+    {
+        m_bcp[m_bcp_index] = val;
+        if (m_bcp_auto_increment)
+        {
+            m_bcp_index++;
+            m_bcp_index &= cgb_pal_index_mask;
+        }
+    }
+}
+
+u8 Graphics::ReadOCPS()
+{
+    return (m_ocp_auto_increment << cgb_pal_auto_increment_shift) | 0x40 | (m_ocp_index << cgb_pal_index_shift);
+}
+
+void Graphics::WriteOCPS(u8 val)
+{
+    m_ocp_index = (val >> cgb_pal_index_shift) & cgb_pal_index_mask;
+    m_ocp_auto_increment = (val >> cgb_pal_auto_increment_shift) & 1;
+}
+
+u8 Graphics::ReadOCPD()
+{
+    if (m_display_mode != DisplayMode::PixelTransfer)
+    {
+        return m_ocp[m_ocp_index];
+    }
+
+    return 0xFF;
+}
+
+void Graphics::WriteOCPD(u8 val)
+{
+    if (m_display_mode != DisplayMode::PixelTransfer)
+    {
+        m_ocp[m_ocp_index] = val;
+        if (m_ocp_auto_increment)
+        {
+            m_ocp_index++;
+            m_ocp_index &= cgb_pal_index_mask;
+        }
+    }
+}
+
+u8 Graphics::ReadVBK()
+{
+    return m_vram_bank | ~vbk_mask;
+}
+
+void Graphics::WriteVBK(u8 val)
+{
+    m_vram_bank = val & vbk_mask;
+    m_vram_map = &m_vram[m_vram_bank * 0x2000];
+}
+
 void Graphics::Update(unsigned int cycles)
 {
     if (m_display_enable)
@@ -450,14 +574,46 @@ void Graphics::RefreshScreen()
     m_current_framebuffer ^= 1;
 }
 
+u32 Graphics::GetRGBColor_DMG(unsigned int pixel, std::array<u8, 4> pal)
+{
+    static const std::array<u32, 4> rgb_table = { 0xFFFFFF, 0xAAAAAA, 0x555555, 0x000000 };
+
+    return rgb_table[pal[pixel]];
+}
+
+unsigned int Convert5To8(unsigned int val)
+{
+    return (val * 255 + 15) / 31;
+}
+
+u32 Graphics::GetRGBColor_CGB(unsigned int pixel, std::array<u8, 64> pal, unsigned int pal_slot)
+{
+    int offset = (pal_slot * 8) + (pixel * 2);
+    u16 rgb16 = ((u16)pal[offset + 1] << 8) | pal[offset];
+    unsigned int r5 = (rgb16 >> 0) & 0x1F;
+    unsigned int g5 = (rgb16 >> 5) & 0x1F;
+    unsigned int b5 = (rgb16 >> 10) & 0x1F;
+    unsigned int r8 = Convert5To8(r5);
+    unsigned int g8 = Convert5To8(g5);
+    unsigned int b8 = Convert5To8(b5);
+    return (r8 << 16) | (g8 << 8) | b8;
+}
+
 void Graphics::GetBackgroundPixelPlanes(
     u8* tilemap,
     unsigned int tile_x,
     unsigned int tile_y,
     unsigned int tile_fine_y,
+    unsigned int vram_bank,
+    bool flip_y,
     u8& plane1,
     u8& plane2)
 {
+    if (flip_y)
+    {
+        tile_fine_y = (tile_height - 1) - tile_fine_y;
+    }
+
     u8 tile_num = tilemap[(tile_y * virtual_screen_width) + tile_x];
     unsigned int offset;
 
@@ -472,6 +628,8 @@ void Graphics::GetBackgroundPixelPlanes(
         offset = 0x1000 + ((s8)tile_num * 16) + (tile_fine_y * 2);
     }
 
+    offset += vram_bank * 0x2000;
+
     plane1 = m_vram[offset];
     plane2 = m_vram[offset + 1];
 }
@@ -485,23 +643,46 @@ unsigned int Graphics::GetPixelFromPlanes(u8 plane1, u8 plane2, unsigned int fin
 void Graphics::DrawBackground_Helper(
     FramebufferArray& fb,
     u8* tilemap,
+    u8* attr_table,
     unsigned int x,
     unsigned int tile_x,
     unsigned int tile_fine_x,
     unsigned int tile_y,
     unsigned int tile_fine_y)
 {
+    u8 attr = 0;
+
     for (;;)
     {
+        if (m_hw.is_cgb_mode)
+        {
+            attr = attr_table[(tile_y * virtual_screen_width) + tile_x];
+        }
+
+        unsigned int pal_slot = (attr >> bg_attr_pal_shift) & bg_attr_pal_mask;
+        unsigned int vram_bank = (attr >> bg_attr_vram_bank_shift) & bg_attr_vram_bank_mask;
+        bool flip_x = ((attr & bg_attr_flip_x) != 0);
+        bool flip_y = ((attr & bg_attr_flip_y) != 0);
+        bool high_priority = ((attr & bg_attr_priority) != 0);
+
         u8 plane1, plane2;
-        GetBackgroundPixelPlanes(tilemap, tile_x, tile_y, tile_fine_y, plane1, plane2);
+        GetBackgroundPixelPlanes(tilemap, tile_x, tile_y, tile_fine_y, vram_bank, flip_y, plane1, plane2);
 
         for (;;)
         {
-            unsigned int pixel = GetPixelFromPlanes(plane1, plane2, tile_fine_x, false);
+            unsigned int pixel = GetPixelFromPlanes(plane1, plane2, tile_fine_x, flip_x);
 
             m_bg_color_indices[x] = pixel;
-            fb[(m_ly * lcd_width) + x] = m_bgp[pixel];
+            m_bg_high_priority[x] = high_priority;
+
+            if (m_hw.is_cgb_mode)
+            {
+                fb[(m_ly * lcd_width) + x] = GetRGBColor_CGB(pixel, m_bcp, pal_slot);
+            }
+            else
+            {
+                fb[(m_ly * lcd_width) + x] = GetRGBColor_DMG(pixel, m_bgp);
+            }
 
             if (x == lcd_width - 1)
             {
@@ -540,7 +721,7 @@ void Graphics::DrawBackground(FramebufferArray& fb)
     unsigned int tile_y = line >> 3;
     unsigned int tile_fine_y = line & 7;
 
-    DrawBackground_Helper(fb, m_bg_tilemap, 0, tile_x, tile_fine_x, tile_y, tile_fine_y);
+    DrawBackground_Helper(fb, m_bg_tilemap, m_bg_attr_table, 0, tile_x, tile_fine_x, tile_y, tile_fine_y);
 }
 
 void Graphics::DrawWindow(FramebufferArray& fb)
@@ -568,7 +749,7 @@ void Graphics::DrawWindow(FramebufferArray& fb)
     unsigned int tile_y = window_line >> 3;
     unsigned int tile_fine_y = window_line & 7;
 
-    DrawBackground_Helper(fb, m_window_tilemap, x, tile_x, tile_fine_x, tile_y, tile_fine_y);
+    DrawBackground_Helper(fb, m_window_tilemap, m_window_attr_table, x, tile_x, tile_fine_x, tile_y, tile_fine_y);
 }
 
 void Graphics::WhiteOutScanline(FramebufferArray& fb)
@@ -584,7 +765,7 @@ void Graphics::DrawScanline()
 {
     FramebufferArray& fb = m_framebuffers[m_current_framebuffer];
 
-    if (m_bg_enable)
+    if (m_bg_enable || m_hw.is_cgb_mode)
     {
         DrawBackground(fb);
     }
@@ -644,7 +825,9 @@ void Graphics::DrawSprites(FramebufferArray& fb)
             tile_num &= ~1;
         }
 
-        std::array<u8, 4>& dmg_pal = m_obp[(attr >> oam_attr_dmg_pal_shift) & 1];
+        unsigned int cgb_pal_slot = (attr >> oam_attr_cgb_pal_shift) & oam_attr_cgb_pal_mask;
+        unsigned int vram_bank = m_hw.is_cgb_mode ? ((attr >> oam_attr_vram_bank_shift) & oam_attr_vram_bank_mask) : 0;
+        std::array<u8, 4>& dmg_pal = m_obp[(attr >> oam_attr_dmg_pal_shift) & oam_attr_dmg_pal_mask];
         bool flip_x = ((attr & oam_attr_flip_x) != 0);
         bool flip_y = ((attr & oam_attr_flip_y) != 0);
         bool low_priority = ((attr & oam_attr_priority) != 0);
@@ -656,7 +839,7 @@ void Graphics::DrawSprites(FramebufferArray& fb)
             sprite_line = (sprite_height - 1) - sprite_line;
         }
 
-        unsigned int vram_offset = (tile_num * 16) + (sprite_line * 2);
+        unsigned int vram_offset = (vram_bank * 0x2000) + (tile_num * 16) + (sprite_line * 2);
         u8 plane1 = m_vram[vram_offset];
         u8 plane2 = m_vram[vram_offset + 1];
 
@@ -679,9 +862,16 @@ void Graphics::DrawSprites(FramebufferArray& fb)
         {
             unsigned int pixel = GetPixelFromPlanes(plane1, plane2, fine_x, flip_x);
 
-            if (pixel != 0 && (!low_priority || m_bg_color_indices[x] == 0))
+            if (pixel != 0 && (!m_bg_enable || (!m_bg_high_priority[x] && !low_priority) || m_bg_color_indices[x] == 0))
             {
-                fb[(m_ly * lcd_width) + x] = dmg_pal[pixel];
+                if (m_hw.is_cgb_mode)
+                {
+                    fb[(m_ly * lcd_width) + x] = GetRGBColor_CGB(pixel, m_ocp, cgb_pal_slot);
+                }
+                else
+                {
+                    fb[(m_ly * lcd_width) + x] = GetRGBColor_DMG(pixel, dmg_pal);
+                }
             }
 
             x++;

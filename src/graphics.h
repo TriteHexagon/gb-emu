@@ -26,7 +26,7 @@
 const int lcd_width = 160;
 const int lcd_height = 144;
 
-using FramebufferArray = std::array<u8, lcd_width * lcd_height>;
+using FramebufferArray = std::array<u32, lcd_width * lcd_height>;
 
 struct Hardware;
 
@@ -84,6 +84,21 @@ public:
     u8 ReadWX();
     void WriteWX(u8 val);
 
+    u8 ReadBCPS();
+    void WriteBCPS(u8 val);
+
+    u8 ReadBCPD();
+    void WriteBCPD(u8 val);
+
+    u8 ReadOCPS();
+    void WriteOCPS(u8 val);
+
+    u8 ReadOCPD();
+    void WriteOCPD(u8 val);
+
+    u8 ReadVBK();
+    void WriteVBK(u8 val);
+
     void Update(unsigned int cycles);
 
 private:
@@ -131,17 +146,22 @@ private:
     void CompareLYWithLYC();
     void WhiteOutFramebuffers();
     void RefreshScreen();
+    u32 GetRGBColor_DMG(unsigned int pixel, std::array<u8, 4> pal);
+    u32 GetRGBColor_CGB(unsigned int pixel, std::array<u8, 64> pal, unsigned int pal_slot);
     void GetBackgroundPixelPlanes(
         u8* tilemap,
         unsigned int tile_x,
         unsigned int tile_y,
         unsigned int tile_fine_y,
+        unsigned int vram_bank,
+        bool flip_y,
         u8& plane1,
         u8& plane2);
     unsigned int GetPixelFromPlanes(u8 plane1, u8 plane2, unsigned int fine_x, bool flip_x);
     void DrawBackground_Helper(
         FramebufferArray& fb,
         u8* tilemap,
+        u8* attr_table,
         unsigned int x,
         unsigned int tile_x,
         unsigned int tile_fine_x,
@@ -155,8 +175,12 @@ private:
 
     Hardware& m_hw;
 
-    std::array<u8, 0x2000> m_vram; // video RAM
+    std::array<u8, 0x4000> m_vram; // video RAM
     std::array<u8, 0xA0> m_oam;    // object attribute memory
+
+    u8* m_vram_map;
+
+    int m_vram_bank;
 
     // LCDC
     bool m_bg_enable;
@@ -188,8 +212,17 @@ private:
     u8 m_wy;
     u8 m_wx;
 
+    bool m_bcp_auto_increment;
+    int m_bcp_index;
+    std::array<u8, 64> m_bcp;
+    bool m_ocp_auto_increment;
+    int m_ocp_index;
+    std::array<u8, 64> m_ocp;
+
     u8 *m_bg_tilemap;
+    u8 *m_bg_attr_table;
     u8 *m_window_tilemap;
+    u8 *m_window_attr_table;
 
     int m_cycles_left;
 
@@ -197,4 +230,5 @@ private:
     int m_current_framebuffer;
 
     std::array<int, lcd_width> m_bg_color_indices;
+    std::array<bool, lcd_width> m_bg_high_priority;
 };

@@ -50,6 +50,9 @@ public:
     void SetInterruptFlag(u16 mask);
     void ClearInterruptFlag(u16 mask);
 
+    u8 ReadKEY1();
+    void WriteKEY1(u8 val);
+
     void SetTraceLogEnabled(bool enabled);
 
 private:
@@ -187,6 +190,9 @@ private:
     IMEState m_ime_state;
     u8 m_reg_if; // interrupt request flags
     u8 m_reg_ie; // interrupt enable flags
+
+    bool m_double_speed;
+    bool m_should_switch_speed;
 
     unsigned int m_instruction_cycles;
 

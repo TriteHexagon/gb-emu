@@ -49,7 +49,16 @@ const u16 mmio_addr_obp0 = 0xFF48;
 const u16 mmio_addr_obp1 = 0xFF49;
 const u16 mmio_addr_wy = 0xFF4A;
 const u16 mmio_addr_wx = 0xFF4B;
+const u16 mmio_addr_key1 = 0xFF4D;
+const u16 mmio_addr_vbk = 0xFF4F;
+const u16 mmio_addr_bcps = 0xFF68;
+const u16 mmio_addr_bcpd = 0xFF69;
+const u16 mmio_addr_ocps = 0xFF6A;
+const u16 mmio_addr_ocpd = 0xFF6B;
+const u16 mmio_addr_svbk = 0xFF70;
 const u16 mmio_addr_ie = 0xFFFF;
+
+const unsigned int svbk_mask = 0x7;
 
 void Memory::LoadROM(ROMInfo& rom_info)
 {
@@ -71,7 +80,21 @@ void Memory::Reset()
 {
     m_wram = {};
     m_hram = {};
+    m_wram_map = &m_wram[0x1000];
+    m_wram_bank = 0;
     m_mapper->Reset();
+}
+
+u8 Memory::ReadSVBK()
+{
+    return m_wram_bank | ~svbk_mask;
+}
+
+void Memory::WriteSVBK(u8 val)
+{
+    m_wram_bank = val & svbk_mask;
+    int bank = (m_wram_bank == 0) ? 1 : m_wram_bank;
+    m_wram_map = &m_wram[bank * 0x1000];
 }
 
 u8 Memory::ReadMMIO(u16 addr)
@@ -112,6 +135,27 @@ u8 Memory::ReadMMIO(u16 addr)
         return m_hw.graphics.ReadWY();
     case mmio_addr_wx:
         return m_hw.graphics.ReadWX();
+    }
+
+    if (m_hw.is_cgb_mode)
+    {
+        switch (addr)
+        {
+        case mmio_addr_key1:
+            return m_hw.cpu.ReadKEY1();
+        case mmio_addr_vbk:
+            return m_hw.graphics.ReadVBK();
+        case mmio_addr_bcps:
+            return m_hw.graphics.ReadBCPS();
+        case mmio_addr_bcpd:
+            return m_hw.graphics.ReadBCPD();
+        case mmio_addr_ocps:
+            return m_hw.graphics.ReadOCPS();
+        case mmio_addr_ocpd:
+            return m_hw.graphics.ReadOCPD();
+        case mmio_addr_svbk:
+            return ReadSVBK();
+        }
     }
 
     return 0xFF;
@@ -172,9 +216,11 @@ u8 Memory::Read(u16 addr)
     case 0xB:
         return m_mapper->Read(addr);
     case 0xC:
+        return m_wram[addr & 0xFFF];
     case 0xD:
+        return m_wram_map[addr & 0xFFF];
     case 0xE:
-        return m_wram[addr & 0x1FFF];
+        return m_wram[addr & 0xFFF];
     case 0xF:
         return Read_Fnnn(addr);
     }
@@ -238,6 +284,34 @@ void Memory::WriteMMIO(u16 addr, u8 val)
         m_hw.graphics.WriteWX(val);
         break;
     }
+
+    if (m_hw.is_cgb_mode)
+    {
+        switch (addr)
+        {
+        case mmio_addr_key1:
+            m_hw.cpu.WriteKEY1(val);
+            break;
+        case mmio_addr_vbk:
+            m_hw.graphics.WriteVBK(val);
+            break;
+        case mmio_addr_bcps:
+            m_hw.graphics.WriteBCPS(val);
+            break;
+        case mmio_addr_bcpd:
+            m_hw.graphics.WriteBCPD(val);
+            break;
+        case mmio_addr_ocps:
+            m_hw.graphics.WriteOCPS(val);
+            break;
+        case mmio_addr_ocpd:
+            m_hw.graphics.WriteOCPD(val);
+            break;
+        case mmio_addr_svbk:
+            WriteSVBK(val);
+            break;
+        }
+    }
 }
 
 void Memory::Write_Fnnn(u16 addr, u8 val)
@@ -297,9 +371,13 @@ void Memory::Write(u16 addr, u8 val)
         m_mapper->Write(addr, val);
         break;
     case 0xC:
+        m_wram[addr & 0xFFF] = val;
+        break;
     case 0xD:
+        m_wram_map[addr & 0xFFF] = val;
+        break;
     case 0xE:
-        m_wram[addr & 0x1FFF] = val;
+        m_wram[addr & 0xFFF] = val;
         break;
     case 0xF:
         Write_Fnnn(addr, val);

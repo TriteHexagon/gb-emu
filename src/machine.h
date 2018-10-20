@@ -30,7 +30,8 @@
 
 struct Hardware
 {
-    Hardware() :
+    Hardware(bool is_cgb_mode) :
+        is_cgb_mode(is_cgb_mode),
         cpu(*this),
         memory(*this),
         timer(*this),
@@ -38,6 +39,7 @@ struct Hardware
     {
     }
 
+    const bool is_cgb_mode;
     CPU cpu;
     Memory memory;
     Timer timer;

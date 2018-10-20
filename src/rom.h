@@ -60,8 +60,7 @@ struct ROMInfo
     MapperType mapper_type;
     std::unique_ptr<std::vector<u8>> rom;
     std::unique_ptr<std::vector<u8>> ram;
-    bool is_gbc_aware;
-    bool is_sgb_aware;
+    bool is_cgb_aware;
     bool has_battery;
     bool has_rtc;
     u8 cart_type;

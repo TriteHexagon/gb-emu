@@ -30,8 +30,7 @@ LoadROMStatus LoadROM(const std::string& file_name, ROMInfo& info)
     const long max_rom_size = 0x800000; // 8MB
 
     // ROM header offsets
-    const int ofs_gbc_flag = 0x143;
-    const int ofs_sgb_flag = 0x146;
+    const int ofs_cgb_flag = 0x143;
     const int ofs_cart_type = 0x147;
     const int ofs_rom_size = 0x148;
     const int ofs_ram_size = 0x149;
@@ -76,8 +75,7 @@ LoadROMStatus LoadROM(const std::string& file_name, ROMInfo& info)
 
     fclose(rom_file);
 
-    info.is_gbc_aware = (((*info.rom)[ofs_gbc_flag] & 0x80) != 0);
-    info.is_sgb_aware = ((*info.rom)[ofs_sgb_flag] == 0x03);
+    info.is_cgb_aware = (((*info.rom)[ofs_cgb_flag] & 0x80) != 0);
 
     bool has_ram = false;
     info.has_battery = false;

@@ -62,9 +62,12 @@ const unsigned int flag_h = Bit(flag_h_shift);
 const unsigned int flag_n = Bit(flag_n_shift);
 const unsigned int flag_z = Bit(flag_z_shift);
 
+const int key1_should_switch_speed_shift = 0;
+const int key1_double_speed_shift = 7;
+
 void CPU::Reset()
 {
-    REG_AF = 0x01B0;
+    REG_AF = m_hw.is_cgb_mode ? 0x11B0 : 0x01B0;
     REG_BC = 0x0013;
     REG_DE = 0x00D8;
     REG_HL = 0x014D;
@@ -78,6 +81,9 @@ void CPU::Reset()
 
     REG_IF = 0;
     REG_IE = 0;
+
+    m_double_speed = false;
+    m_should_switch_speed = false;
 
     m_cycles_left = 0;
 
@@ -132,6 +138,11 @@ void CPU::Run(unsigned int cycles)
             }
         }
 
+        if (!m_double_speed)
+        {
+            m_instruction_cycles *= 2;
+        }
+
         m_cycles_left -= m_instruction_cycles;
     }
 }
@@ -166,6 +177,16 @@ void CPU::ClearInterruptFlag(u16 mask)
     REG_IF &= ~mask;
 }
 
+u8 CPU::ReadKEY1()
+{
+    return (m_double_speed << key1_double_speed_shift) | 0x7E | (m_should_switch_speed << key1_should_switch_speed_shift);
+}
+
+void CPU::WriteKEY1(u8 val)
+{
+    m_should_switch_speed = (val >> key1_should_switch_speed_shift) & 1;
+}
+
 void CPU::SetTraceLogEnabled(bool enabled)
 {
     m_trace_log_enabled = enabled;
@@ -176,6 +197,12 @@ void CPU::AddCycles(unsigned int cycles)
     m_instruction_cycles += cycles;
 
     m_hw.timer.Update(cycles);
+
+    if (!m_double_speed)
+    {
+        cycles *= 2;
+    }
+
     m_hw.graphics.Update(cycles);
 }
 
@@ -908,7 +935,11 @@ void CPU::Op_SRL_Reg8(u8& reg)
 
 void CPU::Op_STOP()
 {
-    // TODO: implement STOP
+    if (m_should_switch_speed)
+    {
+        m_double_speed = !m_double_speed;
+        m_should_switch_speed = false;
+    }
 }
 
 void CPU::Op_SUB_A(u8 val)

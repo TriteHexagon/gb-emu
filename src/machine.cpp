@@ -21,7 +21,7 @@
 #include "common.h"
 #include "machine.h"
 
-Machine::Machine(ROMInfo& rom_info)
+Machine::Machine(ROMInfo& rom_info) : m_hw(rom_info.is_cgb_aware)
 {
     m_hw.memory.LoadROM(rom_info);
     Reset();
