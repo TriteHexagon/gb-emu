@@ -49,6 +49,7 @@ const u16 mmio_addr_obp0 = 0xFF48;
 const u16 mmio_addr_obp1 = 0xFF49;
 const u16 mmio_addr_wy = 0xFF4A;
 const u16 mmio_addr_wx = 0xFF4B;
+const u16 mmio_addr_ie = 0xFFFF;
 
 void Memory::LoadROM(ROMInfo& rom_info)
 {
@@ -118,7 +119,7 @@ u8 Memory::ReadMMIO(u16 addr)
 
 u8 Memory::Read_Fnnn(u16 addr)
 {
-    if (addr == 0xFFFF)
+    if (addr == mmio_addr_ie)
     {
         // 0xFFFF
         return m_hw.cpu.ReadIE();
@@ -241,7 +242,7 @@ void Memory::WriteMMIO(u16 addr, u8 val)
 
 void Memory::Write_Fnnn(u16 addr, u8 val)
 {
-    if (addr == 0xFFFF)
+    if (addr == mmio_addr_ie)
     {
         // 0xFFFF
         m_hw.cpu.WriteIE(val);
