@@ -84,6 +84,20 @@ public:
     u8 ReadWX();
     void WriteWX(u8 val);
 
+    u8 ReadVBK();
+    void WriteVBK(u8 val);
+
+    void WriteHDMA1(u8 val);
+
+    void WriteHDMA2(u8 val);
+
+    void WriteHDMA3(u8 val);
+
+    void WriteHDMA4(u8 val);
+
+    u8 ReadHDMA5();
+    void WriteHDMA5(u8 val);
+
     u8 ReadBCPS();
     void WriteBCPS(u8 val);
 
@@ -95,9 +109,6 @@ public:
 
     u8 ReadOCPD();
     void WriteOCPD(u8 val);
-
-    u8 ReadVBK();
-    void WriteVBK(u8 val);
 
     void Update(unsigned int cycles);
 
@@ -144,6 +155,7 @@ private:
     void EnterModeOAMSearch();
     void EnterModePixelTransfer();
     void CompareLYWithLYC();
+    void DoHBlankDMA();
     void WhiteOutFramebuffers();
     void RefreshScreen();
     u32 GetRGBColor_DMG(unsigned int pixel, std::array<u8, 4> pal);
@@ -179,7 +191,6 @@ private:
     std::array<u8, 0xA0> m_oam;    // object attribute memory
 
     u8* m_vram_map;
-
     int m_vram_bank;
 
     // LCDC
@@ -211,6 +222,11 @@ private:
 
     u8 m_wy;
     u8 m_wx;
+
+    u16 m_hdma_src;
+    u16 m_hdma_dest;
+    bool m_hdma_active;
+    int m_hdma_length;
 
     bool m_bcp_auto_increment;
     int m_bcp_index;

@@ -41,6 +41,11 @@ const int stat_coincidence_intr_enable_shift = 6;
 
 const unsigned int stat_display_mode_mask = 0x3;
 
+const int hdma5_length_shift = 0;
+const int hdma5_hblank_shift = 7;
+
+const unsigned int hdma5_length_mask = 0x7F;
+
 const int cgb_pal_index_shift = 0;
 const int cgb_pal_auto_increment_shift = 7;
 
@@ -133,6 +138,11 @@ void Graphics::Reset()
 
     m_wy = 0;
     m_wx = 0;
+
+    m_hdma_src = 0;
+    m_hdma_dest = 0;
+    m_hdma_active = false;
+    m_hdma_length = 0;
 
     m_bcp_auto_increment = false;
     m_bcp_index = 0;
@@ -382,6 +392,76 @@ void Graphics::WriteWX(u8 val)
     m_wx = val;
 }
 
+u8 Graphics::ReadVBK()
+{
+    return m_vram_bank | ~vbk_mask;
+}
+
+void Graphics::WriteVBK(u8 val)
+{
+    m_vram_bank = val & vbk_mask;
+    m_vram_map = &m_vram[m_vram_bank * 0x2000];
+}
+
+void Graphics::WriteHDMA1(u8 val)
+{
+    m_hdma_src = ((u16)val << 8) | (m_hdma_src & 0xFF);
+}
+
+void Graphics::WriteHDMA2(u8 val)
+{
+    m_hdma_src = (m_hdma_src & 0xFF00) | (val & 0xF0);
+}
+
+void Graphics::WriteHDMA3(u8 val)
+{
+    m_hdma_dest = ((u16)val << 8) | (m_hdma_dest & 0xFF);
+}
+
+void Graphics::WriteHDMA4(u8 val)
+{
+    m_hdma_dest = (m_hdma_dest & 0xFF00) | (val & 0xF0);
+}
+
+u8 Graphics::ReadHDMA5()
+{
+    return (!m_hdma_active << hdma5_hblank_shift) | (m_hdma_length << hdma5_length_shift);
+}
+
+void Graphics::WriteHDMA5(u8 val)
+{
+    int length = (val >> hdma5_length_shift) & hdma5_length_mask;
+    bool hblank = (val >> hdma5_hblank_shift) & 1;
+
+    if (m_hdma_active)
+    {
+        if (!hblank)
+        {
+            m_hdma_active = false;
+        }
+        m_hdma_length = length;
+    }
+    else
+    {
+        if (hblank)
+        {
+            // H-Blank DMA
+            m_hdma_active = true;
+            m_hdma_length = length;
+        }
+        else
+        {
+            // general purpose DMA
+            int transfer_length = (length + 1) * 16;
+            for (int i = 0; i < transfer_length; i++)
+            {
+                m_hdma_dest = 0x8000 + (m_hdma_dest & 0x1FFF);
+                m_hw.memory.Write(m_hdma_dest++, m_hw.memory.Read(m_hdma_src++));
+            }
+        }
+    }
+}
+
 u8 Graphics::ReadBCPS()
 {
     return (m_bcp_auto_increment << cgb_pal_auto_increment_shift) | 0x40 | (m_bcp_index << cgb_pal_index_shift);
@@ -450,17 +530,6 @@ void Graphics::WriteOCPD(u8 val)
     }
 }
 
-u8 Graphics::ReadVBK()
-{
-    return m_vram_bank | ~vbk_mask;
-}
-
-void Graphics::WriteVBK(u8 val)
-{
-    m_vram_bank = val & vbk_mask;
-    m_vram_map = &m_vram[m_vram_bank * 0x2000];
-}
-
 void Graphics::Update(unsigned int cycles)
 {
     if (m_display_enable)
@@ -513,6 +582,7 @@ void Graphics::EnterModeHBlank()
 {
     m_display_mode = DisplayMode::HBlank;
     m_cycles_left += hblank_cycles;
+    DoHBlankDMA();
     if (m_mode0_intr_enable)
     {
         m_hw.cpu.SetInterruptFlag(intr_lcdc_status);
@@ -561,6 +631,28 @@ void Graphics::CompareLYWithLYC()
     else
     {
         m_coincidence_flag = false;
+    }
+}
+
+void Graphics::DoHBlankDMA()
+{
+    if (m_hdma_active)
+    {
+        for (int i = 0; i < 16; i++)
+        {
+            m_hdma_dest = 0x8000 + (m_hdma_dest & 0x1FFF);
+            m_hw.memory.Write(m_hdma_dest++, m_hw.memory.Read(m_hdma_src++));
+        }
+
+        if (m_hdma_length == 0)
+        {
+            m_hdma_length = 0x7F;
+            m_hdma_active = false;
+        }
+        else
+        {
+            m_hdma_length--;
+        }
     }
 }
 

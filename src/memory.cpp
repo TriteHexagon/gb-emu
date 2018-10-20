@@ -51,6 +51,11 @@ const u16 mmio_addr_wy = 0xFF4A;
 const u16 mmio_addr_wx = 0xFF4B;
 const u16 mmio_addr_key1 = 0xFF4D;
 const u16 mmio_addr_vbk = 0xFF4F;
+const u16 mmio_addr_hdma1 = 0xFF51;
+const u16 mmio_addr_hdma2 = 0xFF52;
+const u16 mmio_addr_hdma3 = 0xFF53;
+const u16 mmio_addr_hdma4 = 0xFF54;
+const u16 mmio_addr_hdma5 = 0xFF55;
 const u16 mmio_addr_bcps = 0xFF68;
 const u16 mmio_addr_bcpd = 0xFF69;
 const u16 mmio_addr_ocps = 0xFF6A;
@@ -145,6 +150,8 @@ u8 Memory::ReadMMIO(u16 addr)
             return m_hw.cpu.ReadKEY1();
         case mmio_addr_vbk:
             return m_hw.graphics.ReadVBK();
+        case mmio_addr_hdma5:
+            return m_hw.graphics.ReadHDMA5();
         case mmio_addr_bcps:
             return m_hw.graphics.ReadBCPS();
         case mmio_addr_bcpd:
@@ -294,6 +301,21 @@ void Memory::WriteMMIO(u16 addr, u8 val)
             break;
         case mmio_addr_vbk:
             m_hw.graphics.WriteVBK(val);
+            break;
+        case mmio_addr_hdma1:
+            m_hw.graphics.WriteHDMA1(val);
+            break;
+        case mmio_addr_hdma2:
+            m_hw.graphics.WriteHDMA2(val);
+            break;
+        case mmio_addr_hdma3:
+            m_hw.graphics.WriteHDMA3(val);
+            break;
+        case mmio_addr_hdma4:
+            m_hw.graphics.WriteHDMA4(val);
+            break;
+        case mmio_addr_hdma5:
+            m_hw.graphics.WriteHDMA5(val);
             break;
         case mmio_addr_bcps:
             m_hw.graphics.WriteBCPS(val);
