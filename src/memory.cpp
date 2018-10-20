@@ -29,6 +29,27 @@
 #include "mappers/mbc1.h"
 #include "mappers/mbc3.h"
 
+const u16 mmio_addr_joyp = 0xFF00;
+const u16 mmio_addr_sb = 0xFF01;
+const u16 mmio_addr_sc = 0xFF02;
+const u16 mmio_addr_div = 0xFF04;
+const u16 mmio_addr_tima = 0xFF05;
+const u16 mmio_addr_tma = 0xFF06;
+const u16 mmio_addr_tac = 0xFF07;
+const u16 mmio_addr_if = 0xFF0F;
+const u16 mmio_addr_lcdc = 0xFF40;
+const u16 mmio_addr_stat = 0xFF41;
+const u16 mmio_addr_scy = 0xFF42;
+const u16 mmio_addr_scx = 0xFF43;
+const u16 mmio_addr_ly = 0xFF44;
+const u16 mmio_addr_lyc = 0xFF45;
+const u16 mmio_addr_dma = 0xFF46;
+const u16 mmio_addr_bgp = 0xFF47;
+const u16 mmio_addr_obp0 = 0xFF48;
+const u16 mmio_addr_obp1 = 0xFF49;
+const u16 mmio_addr_wy = 0xFF4A;
+const u16 mmio_addr_wx = 0xFF4B;
+
 void Memory::LoadROM(ROMInfo& rom_info)
 {
     switch (rom_info.mapper_type)
@@ -56,39 +77,39 @@ u8 Memory::ReadMMIO(u16 addr)
 {
     switch (addr)
     {
-    case 0xFF00: // JOYP
+    case mmio_addr_joyp:
         return m_hw.joypad.ReadJOYP();
-    case 0xFF04: // DIV
+    case mmio_addr_div:
         return m_hw.timer.ReadDIV();
-    case 0xFF05: // TIMA
+    case mmio_addr_tima:
         return m_hw.timer.ReadTIMA();
-    case 0xFF06: // TMA
+    case mmio_addr_tma:
         return m_hw.timer.ReadTMA();
-    case 0xFF07: // TAC
+    case mmio_addr_tac:
         return m_hw.timer.ReadTAC();
-    case 0xFF0F: // IF
+    case mmio_addr_if:
         return m_hw.cpu.ReadIF();
-    case 0xFF40: // LCDC
+    case mmio_addr_lcdc:
         return m_hw.graphics.ReadLCDC();
-    case 0xFF41: // STAT
+    case mmio_addr_stat:
         return m_hw.graphics.ReadSTAT();
-    case 0xFF42: // SCY
+    case mmio_addr_scy:
         return m_hw.graphics.ReadSCY();
-    case 0xFF43: // SCX
+    case mmio_addr_scx:
         return m_hw.graphics.ReadSCX();
-    case 0xFF44: // LY
+    case mmio_addr_ly:
         return m_hw.graphics.ReadLY();
-    case 0xFF45: // LYC
+    case mmio_addr_lyc:
         return m_hw.graphics.ReadLYC();
-    case 0xFF47: // BGP
+    case mmio_addr_bgp:
         return m_hw.graphics.ReadBGP();
-    case 0xFF48: // OBP0
+    case mmio_addr_obp0:
         return m_hw.graphics.ReadOBP0();
-    case 0xFF49: // OBP1
+    case mmio_addr_obp1:
         return m_hw.graphics.ReadOBP1();
-    case 0xFF4A: // WY
+    case mmio_addr_wy:
         return m_hw.graphics.ReadWY();
-    case 0xFF4B: // WX
+    case mmio_addr_wx:
         return m_hw.graphics.ReadWX();
     }
 
@@ -164,57 +185,55 @@ void Memory::WriteMMIO(u16 addr, u8 val)
 {
     switch (addr)
     {
-    case 0xFF00: // JOYP
+    case mmio_addr_joyp:
         m_hw.joypad.WriteJOYP(val);
         break;
-    case 0xFF01: // SB
-        break;
-    case 0xFF04: // DIV
+    case mmio_addr_div:
         m_hw.timer.WriteDIV();
         break;
-    case 0xFF05: // TIMA
+    case mmio_addr_tima:
         m_hw.timer.WriteTIMA(val);
         break;
-    case 0xFF06: // TMA
+    case mmio_addr_tma:
         m_hw.timer.WriteTMA(val);
         break;
-    case 0xFF07: // TAC
+    case mmio_addr_tac:
         m_hw.timer.WriteTAC(val);
         break;
-    case 0xFF0F: // IF
+    case mmio_addr_if:
         m_hw.cpu.WriteIF(val);
         break;
-    case 0xFF40: // LCDC
+    case mmio_addr_lcdc:
         m_hw.graphics.WriteLCDC(val);
         break;
-    case 0xFF41: // STAT
+    case mmio_addr_stat:
         m_hw.graphics.WriteSTAT(val);
         break;
-    case 0xFF42: // SCY
+    case mmio_addr_scy:
         m_hw.graphics.WriteSCY(val);
         break;
-    case 0xFF43: // SCX
+    case mmio_addr_scx:
         m_hw.graphics.WriteSCX(val);
         break;
-    case 0xFF45: // LYC
+    case mmio_addr_lyc:
         m_hw.graphics.WriteLYC(val);
         break;
-    case 0xFF46: // DMA
+    case mmio_addr_dma:
         m_hw.graphics.WriteDMA(val);
         break;
-    case 0xFF47: // BGP
+    case mmio_addr_bgp:
         m_hw.graphics.WriteBGP(val);
         break;
-    case 0xFF48: // OBP0
+    case mmio_addr_obp0:
         m_hw.graphics.WriteOBP0(val);
         break;
-    case 0xFF49: // OBP1
+    case mmio_addr_obp1:
         m_hw.graphics.WriteOBP1(val);
         break;
-    case 0xFF4A: // WY
+    case mmio_addr_wy:
         m_hw.graphics.WriteWY(val);
         break;
-    case 0xFF4B: // WX
+    case mmio_addr_wx:
         m_hw.graphics.WriteWX(val);
         break;
     }
