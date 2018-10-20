@@ -110,7 +110,7 @@ void Timer::Update(unsigned int cycles)
             if (m_reg_tima == 0xFF)
             {
                 m_reg_tima = m_reg_tma;
-                m_devices.cpu.SetInterruptFlag(intr_timer);
+                m_hw.cpu.SetInterruptFlag(intr_timer);
             }
             else
             {

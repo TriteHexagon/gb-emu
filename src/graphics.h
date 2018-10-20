@@ -28,12 +28,12 @@ const int lcd_height = 144;
 
 using FramebufferArray = std::array<u8, lcd_width * lcd_height>;
 
-struct Devices;
+struct Hardware;
 
 class Graphics
 {
 public:
-    explicit Graphics(Devices& devices) : m_devices(devices)
+    explicit Graphics(Hardware& hw) : m_hw(hw)
     {
     }
 
@@ -153,7 +153,7 @@ private:
     void WhiteOutScanline(FramebufferArray& fb);
     void DrawScanline();
 
-    Devices& m_devices;
+    Hardware& m_hw;
 
     std::array<u8, 0x2000> m_vram; // video RAM
     std::array<u8, 0xA0> m_oam;    // object attribute memory

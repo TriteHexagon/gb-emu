@@ -28,9 +28,9 @@
 #include "graphics.h"
 #include "joypad.h"
 
-struct Devices
+struct Hardware
 {
-    Devices() :
+    Hardware() :
         cpu(*this),
         memory(*this),
         timer(*this),
@@ -56,14 +56,14 @@ public:
 
     const FramebufferArray& GetFramebuffer() const
     {
-        return m_devices.graphics.GetFramebuffer();
+        return m_hw.graphics.GetFramebuffer();
     }
 
     const std::vector<u8>& GetRAM()
     {
-        return m_devices.memory.GetRAM();
+        return m_hw.memory.GetRAM();
     }
 
 private:
-    Devices m_devices;
+    Hardware m_hw;
 };

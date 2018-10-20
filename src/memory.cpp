@@ -57,39 +57,39 @@ u8 Memory::ReadMMIO(u16 addr)
     switch (addr)
     {
     case 0xFF00: // JOYP
-        return m_devices.joypad.ReadJOYP();
+        return m_hw.joypad.ReadJOYP();
     case 0xFF04: // DIV
-        return m_devices.timer.ReadDIV();
+        return m_hw.timer.ReadDIV();
     case 0xFF05: // TIMA
-        return m_devices.timer.ReadTIMA();
+        return m_hw.timer.ReadTIMA();
     case 0xFF06: // TMA
-        return m_devices.timer.ReadTMA();
+        return m_hw.timer.ReadTMA();
     case 0xFF07: // TAC
-        return m_devices.timer.ReadTAC();
+        return m_hw.timer.ReadTAC();
     case 0xFF0F: // IF
-        return m_devices.cpu.ReadIF();
+        return m_hw.cpu.ReadIF();
     case 0xFF40: // LCDC
-        return m_devices.graphics.ReadLCDC();
+        return m_hw.graphics.ReadLCDC();
     case 0xFF41: // STAT
-        return m_devices.graphics.ReadSTAT();
+        return m_hw.graphics.ReadSTAT();
     case 0xFF42: // SCY
-        return m_devices.graphics.ReadSCY();
+        return m_hw.graphics.ReadSCY();
     case 0xFF43: // SCX
-        return m_devices.graphics.ReadSCX();
+        return m_hw.graphics.ReadSCX();
     case 0xFF44: // LY
-        return m_devices.graphics.ReadLY();
+        return m_hw.graphics.ReadLY();
     case 0xFF45: // LYC
-        return m_devices.graphics.ReadLYC();
+        return m_hw.graphics.ReadLYC();
     case 0xFF47: // BGP
-        return m_devices.graphics.ReadBGP();
+        return m_hw.graphics.ReadBGP();
     case 0xFF48: // OBP0
-        return m_devices.graphics.ReadOBP0();
+        return m_hw.graphics.ReadOBP0();
     case 0xFF49: // OBP1
-        return m_devices.graphics.ReadOBP1();
+        return m_hw.graphics.ReadOBP1();
     case 0xFF4A: // WY
-        return m_devices.graphics.ReadWY();
+        return m_hw.graphics.ReadWY();
     case 0xFF4B: // WX
-        return m_devices.graphics.ReadWX();
+        return m_hw.graphics.ReadWX();
     }
 
     return 0xFF;
@@ -100,7 +100,7 @@ u8 Memory::Read_Fnnn(u16 addr)
     if (addr == 0xFFFF)
     {
         // 0xFFFF
-        return m_devices.cpu.ReadIE();
+        return m_hw.cpu.ReadIE();
     }
     else if (addr >= 0xFF80)
     {
@@ -121,7 +121,7 @@ u8 Memory::Read_Fnnn(u16 addr)
     else if (addr >= 0xFE00)
     {
         // 0xFE00-0xFE9F
-        return m_devices.graphics.ReadOAM(addr - 0xFE00);
+        return m_hw.graphics.ReadOAM(addr - 0xFE00);
     }
     else
     {
@@ -145,7 +145,7 @@ u8 Memory::Read(u16 addr)
         return m_mapper->Read(addr);
     case 0x8:
     case 0x9:
-        return m_devices.graphics.ReadVRAM(addr & 0x1FFF);
+        return m_hw.graphics.ReadVRAM(addr & 0x1FFF);
     case 0xA:
     case 0xB:
         return m_mapper->Read(addr);
@@ -165,57 +165,57 @@ void Memory::WriteMMIO(u16 addr, u8 val)
     switch (addr)
     {
     case 0xFF00: // JOYP
-        m_devices.joypad.WriteJOYP(val);
+        m_hw.joypad.WriteJOYP(val);
         break;
     case 0xFF01: // SB
         break;
     case 0xFF04: // DIV
-        m_devices.timer.WriteDIV();
+        m_hw.timer.WriteDIV();
         break;
     case 0xFF05: // TIMA
-        m_devices.timer.WriteTIMA(val);
+        m_hw.timer.WriteTIMA(val);
         break;
     case 0xFF06: // TMA
-        m_devices.timer.WriteTMA(val);
+        m_hw.timer.WriteTMA(val);
         break;
     case 0xFF07: // TAC
-        m_devices.timer.WriteTAC(val);
+        m_hw.timer.WriteTAC(val);
         break;
     case 0xFF0F: // IF
-        m_devices.cpu.WriteIF(val);
+        m_hw.cpu.WriteIF(val);
         break;
     case 0xFF40: // LCDC
-        m_devices.graphics.WriteLCDC(val);
+        m_hw.graphics.WriteLCDC(val);
         break;
     case 0xFF41: // STAT
-        m_devices.graphics.WriteSTAT(val);
+        m_hw.graphics.WriteSTAT(val);
         break;
     case 0xFF42: // SCY
-        m_devices.graphics.WriteSCY(val);
+        m_hw.graphics.WriteSCY(val);
         break;
     case 0xFF43: // SCX
-        m_devices.graphics.WriteSCX(val);
+        m_hw.graphics.WriteSCX(val);
         break;
     case 0xFF45: // LYC
-        m_devices.graphics.WriteLYC(val);
+        m_hw.graphics.WriteLYC(val);
         break;
     case 0xFF46: // DMA
-        m_devices.graphics.WriteDMA(val);
+        m_hw.graphics.WriteDMA(val);
         break;
     case 0xFF47: // BGP
-        m_devices.graphics.WriteBGP(val);
+        m_hw.graphics.WriteBGP(val);
         break;
     case 0xFF48: // OBP0
-        m_devices.graphics.WriteOBP0(val);
+        m_hw.graphics.WriteOBP0(val);
         break;
     case 0xFF49: // OBP1
-        m_devices.graphics.WriteOBP1(val);
+        m_hw.graphics.WriteOBP1(val);
         break;
     case 0xFF4A: // WY
-        m_devices.graphics.WriteWY(val);
+        m_hw.graphics.WriteWY(val);
         break;
     case 0xFF4B: // WX
-        m_devices.graphics.WriteWX(val);
+        m_hw.graphics.WriteWX(val);
         break;
     }
 }
@@ -225,7 +225,7 @@ void Memory::Write_Fnnn(u16 addr, u8 val)
     if (addr == 0xFFFF)
     {
         // 0xFFFF
-        m_devices.cpu.WriteIE(val);
+        m_hw.cpu.WriteIE(val);
     }
     else if (addr >= 0xFF80)
     {
@@ -245,7 +245,7 @@ void Memory::Write_Fnnn(u16 addr, u8 val)
     else if (addr >= 0xFE00)
     {
         // 0xFE00-0xFE9F
-        m_devices.graphics.WriteOAM(addr - 0xFE00, val);
+        m_hw.graphics.WriteOAM(addr - 0xFE00, val);
     }
     else
     {
@@ -270,7 +270,7 @@ void Memory::Write(u16 addr, u8 val)
         break;
     case 0x8:
     case 0x9:
-        m_devices.graphics.WriteVRAM(addr & 0x1FFF, val);
+        m_hw.graphics.WriteVRAM(addr & 0x1FFF, val);
         break;
     case 0xA:
     case 0xB:

@@ -23,30 +23,30 @@
 
 Machine::Machine(ROMInfo& rom_info)
 {
-    m_devices.memory.LoadROM(rom_info);
+    m_hw.memory.LoadROM(rom_info);
     Reset();
 }
 
 void Machine::Reset()
 {
-    m_devices.cpu.Reset();
-    m_devices.memory.Reset();
-    m_devices.timer.Reset();
-    m_devices.graphics.Reset();
-    m_devices.joypad.Reset();
+    m_hw.cpu.Reset();
+    m_hw.memory.Reset();
+    m_hw.timer.Reset();
+    m_hw.graphics.Reset();
+    m_hw.joypad.Reset();
 }
 
 void Machine::Run(unsigned int cycles)
 {
-    m_devices.cpu.Run(cycles);
+    m_hw.cpu.Run(cycles);
 }
 
 void Machine::SetKeyState(u8 dpad_keys, u8 button_keys)
 {
-    m_devices.joypad.SetKeyState(dpad_keys, button_keys);
+    m_hw.joypad.SetKeyState(dpad_keys, button_keys);
 }
 
 void Machine::SetTraceLogEnabled(bool enabled)
 {
-    m_devices.cpu.SetTraceLogEnabled(enabled);
+    m_hw.cpu.SetTraceLogEnabled(enabled);
 }

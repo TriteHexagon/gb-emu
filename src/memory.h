@@ -26,12 +26,12 @@
 #include "mapper.h"
 #include "rom.h"
 
-struct Devices;
+struct Hardware;
 
 class Memory
 {
 public:
-    explicit Memory(Devices& devices) : m_devices(devices)
+    explicit Memory(Hardware& hw) : m_hw(hw)
     {
     }
 
@@ -51,7 +51,7 @@ private:
     void WriteMMIO(u16 addr, u8 val);
     void Write_Fnnn(u16 addr, u8 val);
 
-    Devices& m_devices;
+    Hardware& m_hw;
 
     std::array<u8, 0x2000> m_wram; // work RAM
     std::array<u8, 0x7F> m_hram;   // high RAM
