@@ -38,6 +38,28 @@ const u16 mmio_addr_tima = 0xFF05;
 const u16 mmio_addr_tma = 0xFF06;
 const u16 mmio_addr_tac = 0xFF07;
 const u16 mmio_addr_if = 0xFF0F;
+const u16 mmio_addr_nr10 = 0xFF10;
+const u16 mmio_addr_nr11 = 0xFF11;
+const u16 mmio_addr_nr12 = 0xFF12;
+const u16 mmio_addr_nr13 = 0xFF13;
+const u16 mmio_addr_nr14 = 0xFF14;
+const u16 mmio_addr_nr21 = 0xFF16;
+const u16 mmio_addr_nr22 = 0xFF17;
+const u16 mmio_addr_nr23 = 0xFF18;
+const u16 mmio_addr_nr24 = 0xFF19;
+const u16 mmio_addr_nr30 = 0xFF1A;
+const u16 mmio_addr_nr31 = 0xFF1B;
+const u16 mmio_addr_nr32 = 0xFF1C;
+const u16 mmio_addr_nr33 = 0xFF1D;
+const u16 mmio_addr_nr34 = 0xFF1E;
+const u16 mmio_addr_nr41 = 0xFF20;
+const u16 mmio_addr_nr42 = 0xFF21;
+const u16 mmio_addr_nr43 = 0xFF22;
+const u16 mmio_addr_nr44 = 0xFF23;
+const u16 mmio_addr_nr50 = 0xFF24;
+const u16 mmio_addr_nr51 = 0xFF25;
+const u16 mmio_addr_nr52 = 0xFF26;
+const u16 mmio_addr_wave = 0xFF30;
 const u16 mmio_addr_lcdc = 0xFF40;
 const u16 mmio_addr_stat = 0xFF41;
 const u16 mmio_addr_scy = 0xFF42;
@@ -57,6 +79,7 @@ const u16 mmio_addr_hdma2 = 0xFF52;
 const u16 mmio_addr_hdma3 = 0xFF53;
 const u16 mmio_addr_hdma4 = 0xFF54;
 const u16 mmio_addr_hdma5 = 0xFF55;
+const u16 mmio_addr_rp = 0xFF56;
 const u16 mmio_addr_bcps = 0xFF68;
 const u16 mmio_addr_bcpd = 0xFF69;
 const u16 mmio_addr_ocps = 0xFF6A;
@@ -122,6 +145,65 @@ u8 Memory::ReadMMIO(u16 addr)
         return m_hw.timer.ReadTAC();
     case mmio_addr_if:
         return m_hw.cpu.ReadIF();
+    case mmio_addr_nr10:
+        return m_hw.audio.ReadNR10();
+    case mmio_addr_nr11:
+        return m_hw.audio.ReadNR11();
+    case mmio_addr_nr12:
+        return m_hw.audio.ReadNR12();
+    case mmio_addr_nr13:
+        return m_hw.audio.ReadNR13();
+    case mmio_addr_nr14:
+        return m_hw.audio.ReadNR14();
+    case mmio_addr_nr21:
+        return m_hw.audio.ReadNR21();
+    case mmio_addr_nr22:
+        return m_hw.audio.ReadNR22();
+    case mmio_addr_nr23:
+        return m_hw.audio.ReadNR23();
+    case mmio_addr_nr24:
+        return m_hw.audio.ReadNR24();
+    case mmio_addr_nr30:
+        return m_hw.audio.ReadNR30();
+    case mmio_addr_nr31:
+        return m_hw.audio.ReadNR31();
+    case mmio_addr_nr32:
+        return m_hw.audio.ReadNR32();
+    case mmio_addr_nr33:
+        return m_hw.audio.ReadNR33();
+    case mmio_addr_nr34:
+        return m_hw.audio.ReadNR34();
+    case mmio_addr_nr41:
+        return m_hw.audio.ReadNR41();
+    case mmio_addr_nr42:
+        return m_hw.audio.ReadNR42();
+    case mmio_addr_nr43:
+        return m_hw.audio.ReadNR43();
+    case mmio_addr_nr44:
+        return m_hw.audio.ReadNR44();
+    case mmio_addr_nr50:
+        return m_hw.audio.ReadNR50();
+    case mmio_addr_nr51:
+        return m_hw.audio.ReadNR51();
+    case mmio_addr_nr52:
+        return m_hw.audio.ReadNR52();
+    case mmio_addr_wave + 0x0:
+    case mmio_addr_wave + 0x1:
+    case mmio_addr_wave + 0x2:
+    case mmio_addr_wave + 0x3:
+    case mmio_addr_wave + 0x4:
+    case mmio_addr_wave + 0x5:
+    case mmio_addr_wave + 0x6:
+    case mmio_addr_wave + 0x7:
+    case mmio_addr_wave + 0x8:
+    case mmio_addr_wave + 0x9:
+    case mmio_addr_wave + 0xA:
+    case mmio_addr_wave + 0xB:
+    case mmio_addr_wave + 0xC:
+    case mmio_addr_wave + 0xD:
+    case mmio_addr_wave + 0xE:
+    case mmio_addr_wave + 0xF:
+        return m_hw.audio.ReadWaveRAM(addr & 0xF);
     case mmio_addr_lcdc:
         return m_hw.graphics.ReadLCDC();
     case mmio_addr_stat:
@@ -260,6 +342,87 @@ void Memory::WriteMMIO(u16 addr, u8 val)
         break;
     case mmio_addr_if:
         m_hw.cpu.WriteIF(val);
+        break;
+    case mmio_addr_nr10:
+        m_hw.audio.WriteNR10(val);
+        break;
+    case mmio_addr_nr11:
+        m_hw.audio.WriteNR11(val);
+        break;
+    case mmio_addr_nr12:
+        m_hw.audio.WriteNR12(val);
+        break;
+    case mmio_addr_nr13:
+        m_hw.audio.WriteNR13(val);
+        break;
+    case mmio_addr_nr14:
+        m_hw.audio.WriteNR14(val);
+        break;
+    case mmio_addr_nr21:
+        m_hw.audio.WriteNR21(val);
+        break;
+    case mmio_addr_nr22:
+        m_hw.audio.WriteNR22(val);
+        break;
+    case mmio_addr_nr23:
+        m_hw.audio.WriteNR23(val);
+        break;
+    case mmio_addr_nr24:
+        m_hw.audio.WriteNR24(val);
+        break;
+    case mmio_addr_nr30:
+        m_hw.audio.WriteNR30(val);
+        break;
+    case mmio_addr_nr31:
+        m_hw.audio.WriteNR31(val);
+        break;
+    case mmio_addr_nr32:
+        m_hw.audio.WriteNR32(val);
+        break;
+    case mmio_addr_nr33:
+        m_hw.audio.WriteNR33(val);
+        break;
+    case mmio_addr_nr34:
+        m_hw.audio.WriteNR34(val);
+        break;
+    case mmio_addr_nr41:
+        m_hw.audio.WriteNR41(val);
+        break;
+    case mmio_addr_nr42:
+        m_hw.audio.WriteNR42(val);
+        break;
+    case mmio_addr_nr43:
+        m_hw.audio.WriteNR43(val);
+        break;
+    case mmio_addr_nr44:
+        m_hw.audio.WriteNR44(val);
+        break;
+    case mmio_addr_nr50:
+        m_hw.audio.WriteNR50(val);
+        break;
+    case mmio_addr_nr51:
+        m_hw.audio.WriteNR51(val);
+        break;
+    case mmio_addr_nr52:
+        m_hw.audio.WriteNR52(val);
+        break;
+    case mmio_addr_wave + 0x0:
+    case mmio_addr_wave + 0x1:
+    case mmio_addr_wave + 0x2:
+    case mmio_addr_wave + 0x3:
+    case mmio_addr_wave + 0x4:
+    case mmio_addr_wave + 0x5:
+    case mmio_addr_wave + 0x6:
+    case mmio_addr_wave + 0x7:
+    case mmio_addr_wave + 0x8:
+    case mmio_addr_wave + 0x9:
+    case mmio_addr_wave + 0xA:
+    case mmio_addr_wave + 0xB:
+    case mmio_addr_wave + 0xC:
+    case mmio_addr_wave + 0xD:
+    case mmio_addr_wave + 0xE:
+    case mmio_addr_wave + 0xF:
+        m_hw.audio.WriteWaveRAM(addr & 0xF, val);
         break;
     case mmio_addr_lcdc:
         m_hw.graphics.WriteLCDC(val);

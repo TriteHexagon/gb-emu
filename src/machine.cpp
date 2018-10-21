@@ -32,6 +32,7 @@ void Machine::Reset()
     m_hw.cpu.Reset();
     m_hw.memory.Reset();
     m_hw.timer.Reset();
+    m_hw.audio.Reset();
     m_hw.graphics.Reset();
     m_hw.joypad.Reset();
 }

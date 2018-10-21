@@ -27,6 +27,7 @@
 #include "timer.h"
 #include "graphics.h"
 #include "joypad.h"
+#include "audio.h"
 
 struct Hardware
 {
@@ -35,6 +36,7 @@ struct Hardware
         cpu(*this),
         memory(*this),
         timer(*this),
+        audio(*this),
         graphics(*this)
     {
     }
@@ -43,6 +45,7 @@ struct Hardware
     CPU cpu;
     Memory memory;
     Timer timer;
+    Audio audio;
     Graphics graphics;
     Joypad joypad;
 };

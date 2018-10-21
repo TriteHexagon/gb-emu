@@ -203,6 +203,7 @@ void CPU::AddCycles(unsigned int cycles)
         cycles *= 2;
     }
 
+    m_hw.audio.Update(cycles);
     m_hw.graphics.Update(cycles);
 }
 
