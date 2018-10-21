@@ -894,13 +894,16 @@ void Graphics::DrawSprites(FramebufferArray& fb)
         }
     }
 
-    std::stable_sort(
-        potentially_visible_sprites.begin(),
-        potentially_visible_sprites.begin() + count,
-        [this](int i, int j)
-        {
-            return m_oam[i * oam_entry_size + oam_x] < m_oam[j * oam_entry_size + oam_x];
-        });
+    if (!m_hw.is_cgb_mode)
+    {
+        std::stable_sort(
+            potentially_visible_sprites.begin(),
+            potentially_visible_sprites.begin() + count,
+            [this](int i, int j)
+            {
+                return m_oam[i * oam_entry_size + oam_x] < m_oam[j * oam_entry_size + oam_x];
+            });
+    }
 
     for (int i = std::min(count, per_line_sprite_limit) - 1; i >= 0; i--)
     {
