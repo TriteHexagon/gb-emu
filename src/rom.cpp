@@ -22,6 +22,7 @@
 #include <array>
 #include "common.h"
 #include "rom.h"
+#include "binary_file_reader.h"
 
 LoadROMStatus LoadROM(const std::string& file_name, ROMInfo& info)
 {
@@ -35,46 +36,38 @@ LoadROMStatus LoadROM(const std::string& file_name, ROMInfo& info)
     const int ofs_rom_size = 0x148;
     const int ofs_ram_size = 0x149;
 
-    FILE* rom_file = fopen(file_name.c_str(), "rb");
 
-    if (rom_file == nullptr)
+    BinaryFileReader rom_file_reader(file_name);
+
+    if (!rom_file_reader.IsOpen())
     {
         return LoadROMStatus::ROMFileOpenFailed;
     }
 
-    fseek(rom_file, 0, SEEK_END);
-    long rom_size = ftell(rom_file);
+    long rom_size = rom_file_reader.GetSize();
 
     if (rom_size < min_rom_size)
     {
-        fclose(rom_file);
         return LoadROMStatus::ROMTooSmall;
     }
 
     if (rom_size > max_rom_size)
     {
-        fclose(rom_file);
         return LoadROMStatus::ROMTooLarge;
     }
 
     if (rom_size & (rom_size - 1))
     {
-        fclose(rom_file);
         return LoadROMStatus::ROMSizeNotPowerOfTwo;
     }
 
     info.rom = std::make_unique<std::vector<u8>>(rom_size, 0);
 
-    rewind(rom_file);
-
-    if (fread(info.rom->data(), rom_size, 1, rom_file) != 1)
+    if (!rom_file_reader.ReadBytes(info.rom->data(), rom_size))
     {
-        fclose(rom_file);
         return LoadROMStatus::ROMFileReadFailed;
     }
-
-    fclose(rom_file);
-
+    
     info.is_cgb_aware = (((*info.rom)[ofs_cgb_flag] & 0x80) != 0);
 
     bool has_ram = false;
@@ -179,27 +172,19 @@ LoadROMStatus LoadROM(const std::string& file_name, ROMInfo& info)
             info.save_file_name = file_name + ".sav";
         }
 
-        FILE* save_file = fopen(info.save_file_name.c_str(), "rb");
+        BinaryFileReader save_file_reader(info.save_file_name);
 
-        if (save_file != nullptr)
+        if (save_file_reader.IsOpen())
         {
-            fseek(save_file, 0, SEEK_END);
-
-            if (ftell(save_file) != ram_size)
+            if (save_file_reader.GetSize() != ram_size)
             {
-                fclose(save_file);
                 return LoadROMStatus::RAMFileWrongSize;
             }
 
-            rewind(save_file);
-
-            if (fread(info.ram->data(), ram_size, 1, save_file) != 1)
+            if (!save_file_reader.ReadBytes(info.ram->data(), ram_size))
             {
-                fclose(save_file);
                 return LoadROMStatus::RAMFileReadFailed;
             }
-
-            fclose(save_file);
         }
     }
 

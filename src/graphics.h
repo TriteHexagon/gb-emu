@@ -235,10 +235,10 @@ private:
     int m_ocp_index;
     std::array<u8, 64> m_ocp;
 
-    u8 *m_bg_tilemap;
-    u8 *m_bg_attr_table;
-    u8 *m_window_tilemap;
-    u8 *m_window_attr_table;
+    u8* m_bg_tilemap;
+    u8* m_bg_attr_table;
+    u8* m_window_tilemap;
+    u8* m_window_attr_table;
 
     int m_cycles_left;
 
