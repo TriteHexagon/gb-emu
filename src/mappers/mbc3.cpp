@@ -309,7 +309,7 @@ void MBC3::Write(u16 addr, u8 val)
                 bool was_halted = ((m_rtc_dh & dh_halt) != 0);
                 bool is_halted = ((val & dh_halt) != 0);
                 m_rtc_dh = val;
-                if (!is_halted && !was_halted)
+                if (!is_halted && was_halted)
                 {
                     m_rtc_last_update = time(nullptr);
                 }
