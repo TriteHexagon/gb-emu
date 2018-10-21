@@ -1,4 +1,4 @@
-This is a work-in-progress Game Boy emulator.
+This is a work-in-progress Game Boy Color emulator.
 
 The CPU, timer, graphics, joypad, and save files are emulated. Audio remains unemulated.
 
