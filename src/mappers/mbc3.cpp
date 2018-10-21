@@ -18,6 +18,10 @@
 // OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN
 // THE SOFTWARE.
 
+// This adheres to the MBC3 RTC save format described here:
+// http://bgb.bircd.org/rtcsave.html
+// Only the 48-byte version is supported.
+
 #include <time.h>
 #include <array>
 #include "mbc3.h"
