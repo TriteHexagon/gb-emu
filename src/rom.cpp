@@ -23,6 +23,7 @@
 #include "common.h"
 #include "rom.h"
 #include "binary_file_reader.h"
+#include "binary_file_writer.h"
 
 LoadROMStatus LoadROM(const std::string& file_name, ROMInfo& info)
 {
@@ -193,20 +194,17 @@ LoadROMStatus LoadROM(const std::string& file_name, ROMInfo& info)
 
 SaveRAMStatus SaveRAM(const std::string& file_name, const std::vector<u8>& ram)
 {
-    FILE* save_file = fopen(file_name.c_str(), "wb");
+    BinaryFileWriter writer(file_name);
 
-    if (save_file == nullptr)
+    if (!writer.IsOpen())
     {
         return SaveRAMStatus::FileOpenFailed;
     }
 
-    if (fwrite(ram.data(), ram.size(), 1, save_file) != 1)
+    if (!writer.WriteBytes(ram.data(), ram.size()))
     {
-        fclose(save_file);
         return SaveRAMStatus::FileWriteFailed;
     }
-
-    fclose(save_file);
 
     return SaveRAMStatus::OK;
 }
