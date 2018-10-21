@@ -28,6 +28,7 @@
 #include "mappers/plain_rom.h"
 #include "mappers/mbc1.h"
 #include "mappers/mbc3.h"
+#include "mappers/mbc5.h"
 
 const u16 mmio_addr_joyp = 0xFF00;
 const u16 mmio_addr_sb = 0xFF01;
@@ -77,6 +78,9 @@ void Memory::LoadROM(ROMInfo& rom_info)
         break;
     case MapperType::MBC3:
         m_mapper = std::make_unique<MBC3>(rom_info);
+        break;
+    case MapperType::MBC5:
+        m_mapper = std::make_unique<MBC5>(rom_info);
         break;
     }
 }

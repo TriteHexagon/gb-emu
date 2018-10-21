@@ -20,54 +20,32 @@
 
 #pragma once
 
-#include <string>
 #include <vector>
-#include <memory>
-#include "common.h"
+#include "../common.h"
+#include "../mapper.h"
+#include "../rom.h"
 
-enum class LoadROMStatus
+class MBC5 : public Mapper
 {
-    OK,
-    ROMFileOpenFailed,
-    ROMFileReadFailed,
-    ROMTooSmall,
-    ROMTooLarge,
-    ROMSizeNotPowerOfTwo,
-    ROMSizeMismatch,
-    RAMInfoInconsistent,
-    RAMFileReadFailed,
-    RAMFileWrongSize,
-    UnknownCartridgeType,
-    UnknownRAMSize,
-};
+public:
+    explicit MBC5(ROMInfo& rom_info);
+    virtual void Reset() override;
+    virtual u8 Read(u16 addr) override;
+    virtual void Write(u16 addr, u8 val) override;
 
-enum class SaveRAMStatus
-{
-    OK,
-    FileOpenFailed,
-    FileWriteFailed,
-};
+    virtual const std::vector<u8>& GetRAM() override
+    {
+        return m_ram;
+    }
 
-enum class MapperType
-{
-    PlainROM,
-    MBC1,
-    MBC3,
-    MBC5,
-};
+private:
+    void UpdateMapping();
 
-struct ROMInfo
-{
-    MapperType mapper_type;
-    std::unique_ptr<std::vector<u8>> rom;
-    std::unique_ptr<std::vector<u8>> ram;
-    bool is_cgb_aware;
-    bool has_battery;
-    bool has_rtc;
-    u8 cart_type;
-    u8 ram_size_index;
-    std::string save_file_name;
+    std::vector<u8> m_rom;
+    std::vector<u8> m_ram;
+    u8* m_rom_map;
+    u8* m_ram_map;
+    unsigned int m_rom_bank;
+    unsigned int m_ram_bank;
+    bool m_ram_enable;
 };
-
-LoadROMStatus LoadROM(const std::string& file_name, ROMInfo& info);
-SaveRAMStatus SaveRAM(const std::string& file_name, const std::vector<u8>& ram);

@@ -121,6 +121,18 @@ LoadROMStatus LoadROM(const std::string& file_name, ROMInfo& info)
         has_ram = true;
         info.has_battery = true;
         break;
+    case 0x19:
+        info.mapper_type = MapperType::MBC5;
+        break;
+    case 0x1A:
+        info.mapper_type = MapperType::MBC5;
+        has_ram = true;
+        break;
+    case 0x1B:
+        info.mapper_type = MapperType::MBC5;
+        has_ram = true;
+        info.has_battery = true;
+        break;
     default:
         return LoadROMStatus::UnknownCartridgeType;
     }
