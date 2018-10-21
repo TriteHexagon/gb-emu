@@ -31,4 +31,9 @@ public:
     virtual u8 Read(u16 addr) = 0;
     virtual void Write(u16 addr, u8 val) = 0;
     virtual const std::vector<u8>& GetRAM() = 0;
+
+    virtual std::vector<u8> GetRTCData()
+    {
+        return std::vector<u8>();
+    }
 };

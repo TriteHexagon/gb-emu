@@ -35,13 +35,13 @@ enum class LoadROMStatus
     ROMSizeNotPowerOfTwo,
     ROMSizeMismatch,
     RAMInfoInconsistent,
-    RAMFileReadFailed,
-    RAMFileWrongSize,
+    BatteryFileReadFailed,
+    BatteryFileWrongSize,
     UnknownCartridgeType,
     UnknownRAMSize,
 };
 
-enum class SaveRAMStatus
+enum class SaveBatteryStatus
 {
     OK,
     FileOpenFailed,
@@ -61,13 +61,15 @@ struct ROMInfo
     MapperType mapper_type;
     std::unique_ptr<std::vector<u8>> rom;
     std::unique_ptr<std::vector<u8>> ram;
+    std::unique_ptr<std::vector<u8>> rtc_data;
     bool is_cgb_aware;
     bool has_battery;
     bool has_rtc;
+    bool loaded_rtc_data;
     u8 cart_type;
     u8 ram_size_index;
-    std::string save_file_name;
+    std::string battery_file_name;
 };
 
 LoadROMStatus LoadROM(const std::string& file_name, ROMInfo& info);
-SaveRAMStatus SaveRAM(const std::string& file_name, const std::vector<u8>& ram);
+SaveBatteryStatus SaveBattery(const std::string& file_name, const std::vector<u8>& ram, const std::vector<u8>& rtc_data);

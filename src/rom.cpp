@@ -37,7 +37,6 @@ LoadROMStatus LoadROM(const std::string& file_name, ROMInfo& info)
     const int ofs_rom_size = 0x148;
     const int ofs_ram_size = 0x149;
 
-
     BinaryFileReader rom_file_reader(file_name);
 
     if (!rom_file_reader.IsOpen())
@@ -62,7 +61,7 @@ LoadROMStatus LoadROM(const std::string& file_name, ROMInfo& info)
         return LoadROMStatus::ROMSizeNotPowerOfTwo;
     }
 
-    info.rom = std::make_unique<std::vector<u8>>(rom_size, 0);
+    info.rom = std::make_unique<std::vector<u8>>(rom_size);
 
     if (!rom_file_reader.ReadBytes(info.rom->data(), rom_size))
     {
@@ -74,6 +73,7 @@ LoadROMStatus LoadROM(const std::string& file_name, ROMInfo& info)
     bool has_ram = false;
     info.has_battery = false;
     info.has_rtc = false;
+    info.loaded_rtc_data = false;
 
     info.cart_type = (*info.rom)[ofs_cart_type];
 
@@ -158,7 +158,7 @@ LoadROMStatus LoadROM(const std::string& file_name, ROMInfo& info)
         return LoadROMStatus::RAMInfoInconsistent;
     }
 
-    info.ram = std::make_unique<std::vector<u8>>(ram_size, 0);
+    info.ram = std::make_unique<std::vector<u8>>(ram_size);
 
     if (info.has_battery)
     {
@@ -178,25 +178,45 @@ LoadROMStatus LoadROM(const std::string& file_name, ROMInfo& info)
 
         if (dot_pos != std::string::npos && (slash_pos == std::string::npos || slash_pos < dot_pos))
         {
-            info.save_file_name = file_name.substr(0, dot_pos) + ".sav";
+            info.battery_file_name = file_name.substr(0, dot_pos) + ".sav";
         }
         else
         {
-            info.save_file_name = file_name + ".sav";
+            info.battery_file_name = file_name + ".sav";
         }
 
-        BinaryFileReader save_file_reader(info.save_file_name);
+        BinaryFileReader battery_file_reader(info.battery_file_name);
 
-        if (save_file_reader.IsOpen())
+        if (battery_file_reader.IsOpen())
         {
-            if (save_file_reader.GetSize() != ram_size)
+            const int rtc_data_size = 48;
+            long battery_file_size = ram_size;
+
+            if (info.has_rtc)
             {
-                return LoadROMStatus::RAMFileWrongSize;
+                battery_file_size += rtc_data_size;
             }
 
-            if (!save_file_reader.ReadBytes(info.ram->data(), ram_size))
+            if (battery_file_reader.GetSize() != battery_file_size)
             {
-                return LoadROMStatus::RAMFileReadFailed;
+                return LoadROMStatus::BatteryFileWrongSize;
+            }
+
+            if (!battery_file_reader.ReadBytes(info.ram->data(), ram_size))
+            {
+                return LoadROMStatus::BatteryFileReadFailed;
+            }
+
+            if (info.has_rtc)
+            {
+                info.rtc_data = std::make_unique<std::vector<u8>>(rtc_data_size);
+
+                if (!battery_file_reader.ReadBytes(info.rtc_data->data(), rtc_data_size))
+                {
+                    return LoadROMStatus::BatteryFileReadFailed;
+                }
+
+                info.loaded_rtc_data = true;
             }
         }
     }
@@ -204,19 +224,27 @@ LoadROMStatus LoadROM(const std::string& file_name, ROMInfo& info)
     return LoadROMStatus::OK;
 }
 
-SaveRAMStatus SaveRAM(const std::string& file_name, const std::vector<u8>& ram)
+SaveBatteryStatus SaveBattery(const std::string& file_name, const std::vector<u8>& ram, const std::vector<u8>& rtc_data)
 {
     BinaryFileWriter writer(file_name);
 
     if (!writer.IsOpen())
     {
-        return SaveRAMStatus::FileOpenFailed;
+        return SaveBatteryStatus::FileOpenFailed;
     }
 
     if (!writer.WriteBytes(ram.data(), ram.size()))
     {
-        return SaveRAMStatus::FileWriteFailed;
+        return SaveBatteryStatus::FileWriteFailed;
     }
 
-    return SaveRAMStatus::OK;
+    if (rtc_data.size() != 0)
+    {
+        if (!writer.WriteBytes(rtc_data.data(), rtc_data.size()))
+        {
+            return SaveBatteryStatus::FileWriteFailed;
+        }
+    }
+
+    return SaveBatteryStatus::OK;
 }

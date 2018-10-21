@@ -45,6 +45,11 @@ public:
         return m_mapper->GetRAM();
     }
 
+    std::vector<u8> GetRTCData()
+    {
+        return m_mapper->GetRTCData();
+    }
+
 private:
     u8 ReadSVBK();
     void WriteSVBK(u8 val);

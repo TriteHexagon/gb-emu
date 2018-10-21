@@ -38,9 +38,24 @@ public:
         return m_ram;
     }
 
-private:
-    void UpdateMapping();
+    virtual std::vector<u8> GetRTCData() override;
 
+private:
+    enum RTCReg
+    {
+        RTC_REG_NONE = 0,
+        RTC_REG_S = 8,
+        RTC_REG_M = 9,
+        RTC_REG_H = 10,
+        RTC_REG_DL = 11,
+        RTC_REG_DH = 12,
+    };
+
+    void UpdateMapping();
+    void UpdateRTC();
+    void ResetRTCData();
+
+    const bool m_has_rtc;
     std::vector<u8> m_rom;
     std::vector<u8> m_ram;
     u8* m_rom_map;
@@ -48,4 +63,18 @@ private:
     unsigned int m_rom_bank;
     unsigned int m_ram_bank;
     bool m_ram_enable;
+
+    RTCReg m_rtc_current_reg;
+    int m_rtc_latch_state;
+    u8 m_rtc_s;
+    u8 m_rtc_m;
+    u8 m_rtc_h;
+    u8 m_rtc_dl;
+    u8 m_rtc_dh;
+    u8 m_rtc_latched_s;
+    u8 m_rtc_latched_m;
+    u8 m_rtc_latched_h;
+    u8 m_rtc_latched_dl;
+    u8 m_rtc_latched_dh;
+    s64 m_rtc_last_update;
 };

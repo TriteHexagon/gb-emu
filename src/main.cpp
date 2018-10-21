@@ -150,11 +150,11 @@ int main(int argc, char** argv)
     case LoadROMStatus::RAMInfoInconsistent:
         fprintf(stderr, "catridge type and RAM size are inconsistent\n");
         return 1;
-    case LoadROMStatus::RAMFileReadFailed:
-        fprintf(stderr, "Unable to read save file\n");
+    case LoadROMStatus::BatteryFileReadFailed:
+        fprintf(stderr, "Unable to read battery file\n");
         return 1;
-    case LoadROMStatus::RAMFileWrongSize:
-        fprintf(stderr, "Save file is the wrong size\n");
+    case LoadROMStatus::BatteryFileWrongSize:
+        fprintf(stderr, "Battery file is the wrong size\n");
         return 1;
     case LoadROMStatus::UnknownCartridgeType:
         fprintf(stderr, "unknown cartridge type: 0x%02X\n", rom_info.cart_type);
@@ -211,18 +211,18 @@ int main(int argc, char** argv)
 
     if (rom_info.has_battery)
     {
-        SaveRAMStatus save_ram_status = SaveRAM(rom_info.save_file_name, machine.GetRAM());
+        SaveBatteryStatus save_ram_status = SaveBattery(rom_info.battery_file_name, machine.GetRAM(), machine.GetRTCData());
 
         switch (save_ram_status)
         {
-        case SaveRAMStatus::OK:
+        case SaveBatteryStatus::OK:
             // no error
             break;
-        case SaveRAMStatus::FileOpenFailed:
-            fprintf(stderr, "Unable to open save file for writing\n");
+        case SaveBatteryStatus::FileOpenFailed:
+            fprintf(stderr, "Unable to open battery file for writing\n");
             return 1;
-        case SaveRAMStatus::FileWriteFailed:
-            fprintf(stderr, "Unable to write save file\n");
+        case SaveBatteryStatus::FileWriteFailed:
+            fprintf(stderr, "Unable to write battery file\n");
             return 1;
         }
     }

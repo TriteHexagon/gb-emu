@@ -66,6 +66,11 @@ public:
         return m_hw.memory.GetRAM();
     }
 
+    std::vector<u8> GetRTCData()
+    {
+        return m_hw.memory.GetRTCData();
+    }
+
 private:
     Hardware m_hw;
 };
