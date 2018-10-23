@@ -1,6 +1,6 @@
-This is a work-in-progress Game Boy Color emulator.
+This is a Game Boy Color emulator.
 
-The CPU, timer, graphics, joypad, and save files are emulated. Audio remains unemulated.
+The CPU, timer, audio, graphics, joypad, and saving are emulated.
 
 The CPU has been tested using Blargg's cpu_instrs tests, with all tests passing.
 
