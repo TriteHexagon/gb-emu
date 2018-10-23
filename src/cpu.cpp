@@ -177,6 +177,11 @@ void CPU::ClearInterruptFlag(u16 mask)
     REG_IF &= ~mask;
 }
 
+bool CPU::IsDoubleSpeed()
+{
+    return m_double_speed;
+}
+
 u8 CPU::ReadKEY1()
 {
     return (m_double_speed << key1_double_speed_shift) | 0x7E | (m_should_switch_speed << key1_should_switch_speed_shift);

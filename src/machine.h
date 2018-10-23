@@ -25,9 +25,9 @@
 #include "cpu.h"
 #include "memory.h"
 #include "timer.h"
+#include "audio.h"
 #include "graphics.h"
 #include "joypad.h"
-#include "audio.h"
 
 struct Hardware
 {
@@ -58,6 +58,16 @@ public:
     void Run(unsigned int cycles);
     void SetKeyState(u8 dpad_keys, u8 button_keys);
     void SetTraceLogEnabled(bool enabled);
+
+    const std::vector<float>& GetAudioSampleBuffer()
+    {
+        return m_hw.audio.GetSampleBuffer();
+    }
+
+    void ClearAudioSampleBuffer()
+    {
+        m_hw.audio.ClearSampleBuffer();
+    }
 
     const FramebufferArray& GetFramebuffer() const
     {

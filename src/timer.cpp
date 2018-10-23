@@ -98,7 +98,15 @@ void Timer::WriteTAC(u8 val)
 
 void Timer::Update(unsigned int cycles)
 {
+    u16 audio_mask = m_hw.cpu.IsDoubleSpeed() ? 0x4000 : 0x2000;
+    u16 old_counter = m_counter;
+
     m_counter += cycles * clock_cycles_per_machine_cycle;
+
+    if ((old_counter & audio_mask) && !(m_counter & audio_mask))
+    {
+        m_hw.audio.TimerTick();
+    }
 
     if (m_timer_enable)
     {

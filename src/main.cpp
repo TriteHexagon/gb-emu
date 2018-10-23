@@ -76,7 +76,7 @@ void UpdateJoypad(Machine& machine)
     machine.SetKeyState(dpad_keys, button_keys);
 }
 
-void MainLoop(SDL_Renderer *renderer, SDL_Texture *texture, Machine& machine)
+void MainLoop(SDL_Renderer *renderer, SDL_Texture *texture, SDL_AudioDeviceID audio_dev, Machine& machine)
 {
     for (;;)
     {
@@ -105,9 +105,19 @@ void MainLoop(SDL_Renderer *renderer, SDL_Texture *texture, Machine& machine)
 
         machine.Run(17556 * 2);
 
+        const std::vector<float>& audio_sample_buffer = machine.GetAudioSampleBuffer();
+        SDL_QueueAudio(audio_dev, audio_sample_buffer.data(), audio_sample_buffer.size() * sizeof(float));
+
+        machine.ClearAudioSampleBuffer();
+
         SDL_UpdateTexture(texture, NULL, machine.GetFramebuffer().data(), lcd_width * sizeof(Uint32));
         SDL_RenderCopy(renderer, texture, NULL, NULL);
         SDL_RenderPresent(renderer);
+
+        while (SDL_GetQueuedAudioSize(audio_dev) > (sample_rate / 10) * sizeof(float) * 2)
+        {
+            SDL_Delay(1);
+        }
     }
 }
 
@@ -170,7 +180,7 @@ int main(int argc, char** argv)
     const int screen_width = lcd_width * screen_scale;
     const int screen_height = lcd_height * screen_scale;
 
-    if (SDL_Init(SDL_INIT_VIDEO) == -1)
+    if (SDL_Init(SDL_INIT_VIDEO | SDL_INIT_AUDIO) == -1)
     {
         fprintf(stderr, "Unable to initialize SDL: %s\n", SDL_GetError());
         return 1;
@@ -207,7 +217,25 @@ int main(int argc, char** argv)
         return 1;
     }
 
-    MainLoop(renderer, texture, machine);
+    SDL_AudioSpec desired_spec, obtained_spec;
+    SDL_memset(&desired_spec, 0, sizeof(desired_spec));
+    desired_spec.freq = sample_rate;
+    desired_spec.format = AUDIO_F32;
+    desired_spec.channels = 2;
+    desired_spec.samples = 4096;
+    desired_spec.callback = nullptr;
+
+    SDL_AudioDeviceID audio_dev = SDL_OpenAudioDevice(nullptr, 0, &desired_spec, &obtained_spec, 0);
+
+    if (audio_dev == 0)
+    {
+        fprintf(stderr, "Unable to open audio device: %s\n", SDL_GetError());
+        return 1;
+    }
+
+    SDL_PauseAudioDevice(audio_dev, 0);
+
+    MainLoop(renderer, texture, audio_dev, machine);
 
     if (rom_info.has_battery)
     {

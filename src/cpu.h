@@ -50,6 +50,8 @@ public:
     void SetInterruptFlag(u16 mask);
     void ClearInterruptFlag(u16 mask);
 
+    bool IsDoubleSpeed();
+
     u8 ReadKEY1();
     void WriteKEY1(u8 val);
 
