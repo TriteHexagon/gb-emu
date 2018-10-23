@@ -439,6 +439,7 @@ u8 Audio::ReadNR52()
 {
     return (m_audio_enable << 7)
         | 0x70
+        | (m_noise_enabled << 3)
         | (m_wave_enabled << 2)
         | (m_pulse2_enabled << 1)
         | (m_pulse1_enabled << 0);
