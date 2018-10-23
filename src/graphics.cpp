@@ -276,8 +276,6 @@ u8 Graphics::ReadSTAT()
 
 void Graphics::WriteSTAT(u8 val)
 {
-    m_display_mode = (DisplayMode)((val >> stat_display_mode_shift) & stat_display_mode_mask);
-    m_coincidence_flag = ((val >> stat_coincidence_flag_shift) & 1);
     m_mode0_intr_enable = ((val >> stat_mode0_intr_enable_shift) & 1);
     m_mode1_intr_enable = ((val >> stat_mode1_intr_enable_shift) & 1);
     m_mode2_intr_enable = ((val >> stat_mode2_intr_enable_shift) & 1);
