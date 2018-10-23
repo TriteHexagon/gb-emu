@@ -240,6 +240,9 @@ private:
     u8* m_window_tilemap;
     u8* m_window_attr_table;
 
+    u8 m_latched_wy;
+    u8 m_window_line;
+
     int m_cycles_left;
 
     std::array<FramebufferArray, 2> m_framebuffers;

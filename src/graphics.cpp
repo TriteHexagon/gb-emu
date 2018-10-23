@@ -156,6 +156,9 @@ void Graphics::Reset()
     m_window_tilemap = &m_vram[0x1800];
     m_window_attr_table = &m_vram[0x3800];
 
+    m_latched_wy = 0;
+    m_window_line = 0;
+
     m_cycles_left = 0;
 
     WhiteOutFramebuffers();
@@ -231,6 +234,8 @@ void Graphics::WriteLCDC(u8 val)
     {
         if (m_display_enable)
         {
+            m_latched_wy = m_wy;
+            m_window_line = 0;
             EnterModeOAMSearch();
         }
         else
@@ -556,6 +561,8 @@ void Graphics::Update(unsigned int cycles)
                 {
                     m_ly = 0;
                     CompareLYWithLYC();
+                    m_latched_wy = m_wy;
+                    m_window_line = 0;
                     EnterModeOAMSearch();
                 }
                 else
@@ -816,9 +823,7 @@ void Graphics::DrawBackground(FramebufferArray& fb)
 
 void Graphics::DrawWindow(FramebufferArray& fb)
 {
-    int window_line = m_ly - m_wy;
-
-    if (window_line < 0)
+    if (m_ly < m_latched_wy)
     {
         return;
     }
@@ -836,8 +841,10 @@ void Graphics::DrawWindow(FramebufferArray& fb)
     unsigned int tile_x = window_x_offset >> 3;
     unsigned int tile_fine_x = window_x_offset & 7;
 
-    unsigned int tile_y = window_line >> 3;
-    unsigned int tile_fine_y = window_line & 7;
+    unsigned int tile_y = m_window_line >> 3;
+    unsigned int tile_fine_y = m_window_line & 7;
+
+    m_window_line++;
 
     DrawBackground_Helper(fb, m_window_tilemap, m_window_attr_table, x, tile_x, tile_fine_x, tile_y, tile_fine_y);
 }
