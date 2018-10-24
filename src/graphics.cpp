@@ -625,6 +625,11 @@ void Graphics::EnterModePixelTransfer()
 
 void Graphics::CompareLYWithLYC()
 {
+    if (!m_display_enable)
+    {
+        return;
+    }
+
     if (m_ly == m_lyc)
     {
         m_coincidence_flag = true;
