@@ -55,9 +55,9 @@ private:
     void UpdateRTC();
     void ResetRTCData();
 
-    const bool m_has_rtc;
     std::vector<u8> m_rom;
     std::vector<u8> m_ram;
+    const bool m_has_rtc;
     u8* m_rom_map;
     u8* m_ram_map;
     unsigned int m_rom_bank;

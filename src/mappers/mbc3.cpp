@@ -22,6 +22,7 @@
 // http://bgb.bircd.org/rtcsave.html
 // Only the 48-byte version is supported.
 
+#include <assert.h>
 #include <time.h>
 #include <array>
 #include "mbc3.h"
@@ -315,6 +316,8 @@ void MBC3::Write(u16 addr, u8 val)
                 }
                 break;
             }
+            default:
+                assert(0);
             }
         }
     }
