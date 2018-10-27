@@ -1,6 +1,6 @@
 BINARY_NAME := gb_emu
 
-CXXFLAGS := -O2 -flto -Wall -Wextra
+CXXFLAGS := --std=c++17 -O2 -flto -Wall -Wextra
 
 SOURCES := $(wildcard src/*.cpp) $(wildcard src/mappers/*.cpp)
 HEADERS := $(wildcard src/*.h) $(wildcard src/mappers/*.h)
