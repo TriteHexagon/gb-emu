@@ -239,9 +239,9 @@ int main(int argc, char** argv)
 
     if (rom_info.has_battery)
     {
-        SaveBatteryStatus save_ram_status = SaveBattery(rom_info.battery_file_name, machine.GetRAM(), machine.GetRTCData());
+        SaveBatteryStatus save_battery_status = SaveBattery(rom_info.battery_file_name, machine.GetRAM(), machine.GetRTCData());
 
-        switch (save_ram_status)
+        switch (save_battery_status)
         {
         case SaveBatteryStatus::OK:
             // no error
