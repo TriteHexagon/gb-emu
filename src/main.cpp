@@ -76,7 +76,7 @@ void UpdateJoypad(Machine& machine)
     machine.SetKeyState(dpad_keys, button_keys);
 }
 
-void MainLoop(SDL_Renderer *renderer, SDL_Texture *texture, SDL_AudioDeviceID audio_dev, Machine& machine)
+void MainLoop(SDL_Renderer* renderer, SDL_Texture* texture, SDL_AudioDeviceID audio_dev, Machine& machine)
 {
     for (;;)
     {
@@ -188,7 +188,7 @@ int main(int argc, char** argv)
 
     atexit(SDL_Quit);
 
-    SDL_Window *window = SDL_CreateWindow("GB Emu", SDL_WINDOWPOS_UNDEFINED, SDL_WINDOWPOS_UNDEFINED, screen_width, screen_height, 0);
+    SDL_Window* window = SDL_CreateWindow("GB Emu", SDL_WINDOWPOS_UNDEFINED, SDL_WINDOWPOS_UNDEFINED, screen_width, screen_height, 0);
 
     if (window == nullptr)
     {
@@ -196,7 +196,7 @@ int main(int argc, char** argv)
         return 1;
     }
 
-    SDL_Renderer *renderer = SDL_CreateRenderer(window, -1, SDL_RENDERER_PRESENTVSYNC);
+    SDL_Renderer* renderer = SDL_CreateRenderer(window, -1, SDL_RENDERER_PRESENTVSYNC);
 
     if (renderer == nullptr)
     {
@@ -209,7 +209,7 @@ int main(int argc, char** argv)
         fprintf(stderr, "Unable to set logical size for rendering: %s\n", SDL_GetError());
     }
 
-    SDL_Texture *texture = SDL_CreateTexture(renderer, SDL_PIXELFORMAT_RGB888, SDL_TEXTUREACCESS_STREAMING, lcd_width, lcd_height);
+    SDL_Texture* texture = SDL_CreateTexture(renderer, SDL_PIXELFORMAT_RGB888, SDL_TEXTUREACCESS_STREAMING, lcd_width, lcd_height);
 
     if (texture == nullptr)
     {
