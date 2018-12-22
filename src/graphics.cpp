@@ -151,10 +151,7 @@ void Graphics::Reset()
     m_ocp_index = 0;
     m_ocp.fill(0xFF);
 
-    m_bg_tilemap = &m_vram[0x1800];
-    m_bg_attr_table = &m_vram[0x3800];
-    m_window_tilemap = &m_vram[0x1800];
-    m_window_attr_table = &m_vram[0x3800];
+    UpdateTilemapSelection();
 
     m_latched_wy = 0;
     m_window_line = 0;
@@ -246,27 +243,7 @@ void Graphics::WriteLCDC(u8 val)
         }
     }
 
-    if (m_bg_tilemap_select == BG_TILEMAP_9800)
-    {
-        m_bg_tilemap = &m_vram[0x1800];
-        m_bg_attr_table = &m_vram[0x3800];
-    }
-    else
-    {
-        m_bg_tilemap = &m_vram[0x1C00];
-        m_bg_attr_table = &m_vram[0x3C00];
-    }
-
-    if (m_window_tilemap_select == WINDOW_TILEMAP_9800)
-    {
-        m_window_tilemap = &m_vram[0x1800];
-        m_window_attr_table = &m_vram[0x3800];
-    }
-    else
-    {
-        m_window_tilemap = &m_vram[0x1C00];
-        m_window_attr_table = &m_vram[0x3C00];
-    }
+    UpdateTilemapSelection();
 }
 
 u8 Graphics::ReadSTAT()
@@ -580,6 +557,31 @@ void Graphics::Update(unsigned int cycles)
                 break;
             }
         }
+    }
+}
+
+void Graphics::UpdateTilemapSelection()
+{
+    if (m_bg_tilemap_select == BG_TILEMAP_9800)
+    {
+        m_bg_tilemap = &m_vram[0x1800];
+        m_bg_attr_table = &m_vram[0x3800];
+    }
+    else
+    {
+        m_bg_tilemap = &m_vram[0x1C00];
+        m_bg_attr_table = &m_vram[0x3C00];
+    }
+
+    if (m_window_tilemap_select == WINDOW_TILEMAP_9800)
+    {
+        m_window_tilemap = &m_vram[0x1800];
+        m_window_attr_table = &m_vram[0x3800];
+    }
+    else
+    {
+        m_window_tilemap = &m_vram[0x1C00];
+        m_window_attr_table = &m_vram[0x3C00];
     }
 }
 

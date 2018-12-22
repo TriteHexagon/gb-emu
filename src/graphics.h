@@ -150,6 +150,7 @@ private:
     static const int tile_width = 8;
     static const int tile_height = 8;
 
+    void UpdateTilemapSelection();
     void EnterModeHBlank();
     void EnterModeVBlank();
     void EnterModeOAMSearch();
