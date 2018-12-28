@@ -159,8 +159,8 @@ private:
     void DoHBlankDMA();
     void WhiteOutFramebuffers();
     void RefreshScreen();
-    u32 GetRGBColor_DMG(unsigned int pixel, std::array<u8, 4> pal);
-    u32 GetRGBColor_CGB(unsigned int pixel, std::array<u8, 64> pal, unsigned int pal_slot);
+    u32 GetRGBColor_DMG(unsigned int pixel, const std::array<u8, 4>& pal);
+    u32 GetRGBColor_CGB(unsigned int pixel, const std::array<u8, 64>& pal, unsigned int pal_slot);
     void GetBackgroundPixelPlanes(
         u8* tilemap,
         unsigned int tile_x,

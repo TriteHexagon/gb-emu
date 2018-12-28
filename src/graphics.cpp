@@ -678,7 +678,7 @@ void Graphics::RefreshScreen()
     m_current_framebuffer ^= 1;
 }
 
-u32 Graphics::GetRGBColor_DMG(unsigned int pixel, std::array<u8, 4> pal)
+u32 Graphics::GetRGBColor_DMG(unsigned int pixel, const std::array<u8, 4>& pal)
 {
     static const std::array<u32, 4> rgb_table = { 0xFFFFFF, 0xAAAAAA, 0x555555, 0x000000 };
 
@@ -690,7 +690,7 @@ unsigned int Convert5To8(unsigned int val)
     return (val * 255 + 15) / 31;
 }
 
-u32 Graphics::GetRGBColor_CGB(unsigned int pixel, std::array<u8, 64> pal, unsigned int pal_slot)
+u32 Graphics::GetRGBColor_CGB(unsigned int pixel, const std::array<u8, 64>& pal, unsigned int pal_slot)
 {
     int offset = (pal_slot * 8) + (pixel * 2);
     u16 rgb16 = ((u16)pal[offset + 1] << 8) | pal[offset];
