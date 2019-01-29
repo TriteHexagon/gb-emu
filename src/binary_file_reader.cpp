@@ -1,4 +1,4 @@
-// Copyright 2018 David Brotz
+// Copyright 2018-2019 David Brotz
 //
 // Permission is hereby granted, free of charge, to any person obtaining a copy
 // of this software and associated documentation files (the "Software"), to deal
@@ -62,7 +62,11 @@ bool BinaryFileReader::ReadBytes(void* dest, size_t count)
         return false;
     }
 
-    m_ok = (fread(dest, 1, count, m_file) == count);
+    if (fread(dest, 1, count, m_file) != count)
+    {
+        m_ok = false;
+    }
+
     return m_ok;
 }
 
