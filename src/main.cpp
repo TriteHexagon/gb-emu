@@ -1,4 +1,4 @@
-// Copyright 2018 David Brotz
+// Copyright 2018-2019 David Brotz
 //
 // Permission is hereby granted, free of charge, to any person obtaining a copy
 // of this software and associated documentation files (the "Software"), to deal
@@ -20,11 +20,17 @@
 
 #include <stdio.h>
 #include <stdlib.h>
+#include <string.h>
 #include <vector>
 #include <string>
+#include <mutex>
+#include <algorithm>
 #include "common.h"
 #include "machine.h"
 #include "SDL.h"
+
+const unsigned int num_audio_channels = 2;
+const unsigned int sdl_audio_buffer_size = 4096;
 
 void UpdateJoypad(Machine& machine)
 {
@@ -76,7 +82,17 @@ void UpdateJoypad(Machine& machine)
     machine.SetKeyState(dpad_keys, button_keys);
 }
 
-void MainLoop(SDL_Renderer* renderer, SDL_Texture* texture, SDL_AudioDeviceID audio_dev, Machine& machine)
+// Check if the emulator's audio buffer is more than 1.5 times as large as the SDL audio buffer.
+bool IsAudioBufferOverfilled(Machine& machine)
+{
+    std::lock_guard<std::mutex> lock(machine.GetAudioSampleBufferMutex());
+
+    const std::vector<float>& audio_sample_buffer = machine.GetAudioSampleBuffer();
+
+    return audio_sample_buffer.size() > (150 * sdl_audio_buffer_size * num_audio_channels) / 100;
+}
+
+void MainLoop(SDL_Renderer* renderer, SDL_Texture* texture, Machine& machine)
 {
     for (;;)
     {
@@ -105,20 +121,31 @@ void MainLoop(SDL_Renderer* renderer, SDL_Texture* texture, SDL_AudioDeviceID au
 
         machine.Run(17556 * 2);
 
-        const std::vector<float>& audio_sample_buffer = machine.GetAudioSampleBuffer();
-        SDL_QueueAudio(audio_dev, audio_sample_buffer.data(), audio_sample_buffer.size() * sizeof(float));
-
-        machine.ClearAudioSampleBuffer();
-
         SDL_UpdateTexture(texture, NULL, machine.GetFramebuffer().data(), lcd_width * sizeof(Uint32));
         SDL_RenderCopy(renderer, texture, NULL, NULL);
         SDL_RenderPresent(renderer);
 
-        while (SDL_GetQueuedAudioSize(audio_dev) > (sample_rate / 10) * sizeof(float) * 2)
+        while (IsAudioBufferOverfilled(machine))
         {
             SDL_Delay(1);
         }
     }
+}
+
+void AudioCallback(void* userdata, Uint8* stream, int len)
+{
+    Machine* machine = static_cast<Machine*>(userdata);
+
+    std::lock_guard<std::mutex> lock(machine->GetAudioSampleBufferMutex());
+
+    const std::vector<float>& audio_sample_buffer = machine->GetAudioSampleBuffer();
+
+    size_t available_len = std::min(static_cast<size_t>(len), audio_sample_buffer.size() * sizeof(float));
+
+    memset(stream, 0, len);
+    memcpy(stream, audio_sample_buffer.data(), available_len);
+
+    machine->ConsumeAudioSampleBuffer(available_len / sizeof(float));
 }
 
 int main(int argc, char** argv)
@@ -221,9 +248,10 @@ int main(int argc, char** argv)
     SDL_memset(&desired_spec, 0, sizeof(desired_spec));
     desired_spec.freq = sample_rate;
     desired_spec.format = AUDIO_F32;
-    desired_spec.channels = 2;
-    desired_spec.samples = 4096;
-    desired_spec.callback = nullptr;
+    desired_spec.channels = num_audio_channels;
+    desired_spec.samples = sdl_audio_buffer_size;
+    desired_spec.callback = AudioCallback;
+    desired_spec.userdata = &machine;
 
     SDL_AudioDeviceID audio_dev = SDL_OpenAudioDevice(nullptr, 0, &desired_spec, &obtained_spec, 0);
 
@@ -235,7 +263,7 @@ int main(int argc, char** argv)
 
     SDL_PauseAudioDevice(audio_dev, 0);
 
-    MainLoop(renderer, texture, audio_dev, machine);
+    MainLoop(renderer, texture, machine);
 
     if (rom_info.has_battery)
     {

@@ -1,4 +1,4 @@
-// Copyright 2018 David Brotz
+// Copyright 2018-2019 David Brotz
 //
 // Permission is hereby granted, free of charge, to any person obtaining a copy
 // of this software and associated documentation files (the "Software"), to deal
@@ -138,6 +138,11 @@ const std::vector<float>& Audio::GetSampleBuffer()
 void Audio::ClearSampleBuffer()
 {
     m_sample_buffer.clear();
+}
+
+void Audio::ConsumeSampleBuffer(size_t num_samples)
+{
+    m_sample_buffer.erase(m_sample_buffer.begin(), m_sample_buffer.begin() + num_samples);
 }
 
 u8 Audio::ReadNR10()
@@ -694,6 +699,8 @@ u8 Audio::GetNoiseOutput()
 
 void Audio::OutputSample()
 {
+    std::lock_guard<std::mutex> lock(m_sample_buffer_mutex);
+
     if (!m_audio_enable)
     {
         m_sample_buffer.push_back(0);

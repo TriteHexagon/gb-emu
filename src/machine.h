@@ -1,4 +1,4 @@
-// Copyright 2018 David Brotz
+// Copyright 2018-2019 David Brotz
 //
 // Permission is hereby granted, free of charge, to any person obtaining a copy
 // of this software and associated documentation files (the "Software"), to deal
@@ -21,6 +21,7 @@
 #pragma once
 
 #include <vector>
+#include <mutex>
 #include "common.h"
 #include "cpu.h"
 #include "memory.h"
@@ -67,6 +68,16 @@ public:
     void ClearAudioSampleBuffer()
     {
         m_hw.audio.ClearSampleBuffer();
+    }
+
+    void ConsumeAudioSampleBuffer(size_t num_samples)
+    {
+        m_hw.audio.ConsumeSampleBuffer(num_samples);
+    }
+
+    std::mutex& GetAudioSampleBufferMutex()
+    {
+        return m_hw.audio.GetSampleBufferMutex();
     }
 
     const FramebufferArray& GetFramebuffer() const

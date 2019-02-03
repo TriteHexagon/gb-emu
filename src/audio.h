@@ -1,4 +1,4 @@
-// Copyright 2018 David Brotz
+// Copyright 2018-2019 David Brotz
 //
 // Permission is hereby granted, free of charge, to any person obtaining a copy
 // of this software and associated documentation files (the "Software"), to deal
@@ -22,6 +22,7 @@
 
 #include <array>
 #include <vector>
+#include <mutex>
 #include "common.h"
 
 const int sample_rate = 48000;
@@ -39,6 +40,12 @@ public:
 
     const std::vector<float>& GetSampleBuffer();
     void ClearSampleBuffer();
+    void ConsumeSampleBuffer(size_t num_samples);
+
+    std::mutex& GetSampleBufferMutex()
+    {
+        return m_sample_buffer_mutex;
+    }
 
     u8 ReadNR10();
     void WriteNR10(u8 val);
@@ -145,6 +152,7 @@ private:
     Hardware& m_hw;
 
     std::vector<float> m_sample_buffer;
+    std::mutex m_sample_buffer_mutex;
 
     u64 m_total_cycles;
 
