@@ -142,8 +142,8 @@ void AudioCallback(void* userdata, Uint8* stream, int len)
 
     size_t available_len = std::min(static_cast<size_t>(len), audio_sample_buffer.size() * sizeof(float));
 
-    memset(stream, 0, len);
     memcpy(stream, audio_sample_buffer.data(), available_len);
+    memset(stream + available_len, 0, len - available_len);
 
     machine->ConsumeAudioSampleBuffer(available_len / sizeof(float));
 }
