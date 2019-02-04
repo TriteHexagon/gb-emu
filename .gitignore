@@ -1,0 +1,13 @@
+gb_emu
+Debug/*
+Release/*
+Win32/*
+.vs/*
+*.sln
+*.vcxproj
+*.vcxproj.*
+CMakeFiles/*
+CMakeCache.txt
+*.dir/*
+*.cmake
+third_party/SDL2/*
