@@ -23,6 +23,7 @@ set(SRC_FILES
 )
 
 if(MSVC)
+	add_definitions(-D_CRT_SECURE_NO_WARNINGS)
 	set(SDL2_DIR "third_party/SDL2")
 	set(SDL2_INCLUDE_DIRS "${SDL2_DIR}/include")
 	if(CMAKE_SIZEOF_VOID_P EQUAL 8)
