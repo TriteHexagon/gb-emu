@@ -94,6 +94,8 @@ bool IsAudioBufferOverfilled(Machine& machine)
 
 void MainLoop(SDL_Renderer* renderer, SDL_Texture* texture, Machine& machine)
 {
+    bool paused = false;
+
     for (;;)
     {
         SDL_Event event;
@@ -107,6 +109,9 @@ void MainLoop(SDL_Renderer* renderer, SDL_Texture* texture, Machine& machine)
             case SDL_KEYDOWN:
                 switch (event.key.keysym.sym)
                 {
+                case SDLK_p:
+                    paused = !paused;
+                    break;
                 case SDLK_t:
                     machine.SetTraceLogEnabled(true);
                     break;
@@ -119,7 +124,10 @@ void MainLoop(SDL_Renderer* renderer, SDL_Texture* texture, Machine& machine)
 
         UpdateJoypad(machine);
 
-        machine.Run(17556 * 2);
+        if (!paused)
+        {
+            machine.Run(17556 * 2);
+        }
 
         SDL_UpdateTexture(texture, NULL, machine.GetFramebuffer().data(), lcd_width * sizeof(Uint32));
         SDL_RenderCopy(renderer, texture, NULL, NULL);
