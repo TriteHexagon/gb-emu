@@ -3,7 +3,7 @@ project(gb_emu_project)
 
 set(CMAKE_CXX_STANDARD 17)
 
-set(SRC_FILES
+set(SOURCE_FILES
 	src/audio.cpp
 	src/binary_file_reader.cpp
 	src/binary_file_writer.cpp
@@ -20,6 +20,26 @@ set(SRC_FILES
 	src/mappers/mbc3.cpp
 	src/mappers/mbc5.cpp
 	src/mappers/plain_rom.cpp
+)
+
+set(HEADER_FILES
+	src/audio.h
+	src/binary_file_reader.h
+	src/binary_file_writer.h
+	src/common.h
+	src/cpu.h
+	src/disassemble.h
+	src/graphics.h
+	src/joypad.h
+	src/machine.h
+	src/mapper.h
+	src/memory.h
+	src/rom.h
+	src/timer.h
+	src/mappers/mbc1.h
+	src/mappers/mbc3.h
+	src/mappers/mbc5.h
+	src/mappers/plain_rom.h
 )
 
 if(MSVC)
@@ -40,7 +60,7 @@ else()
 	pkg_search_module(SDL2 REQUIRED sdl2)
 endif()
 
-add_executable(gb_emu ${SRC_FILES})
+add_executable(gb_emu ${SOURCE_FILES} ${HEADER_FILES})
 target_include_directories(gb_emu PUBLIC ${SDL2_INCLUDE_DIRS})
 target_link_libraries(gb_emu ${SDL2_LIBRARIES})
 
