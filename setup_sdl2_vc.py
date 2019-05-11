@@ -11,4 +11,4 @@ urllib.request.urlretrieve(url, file_name)
 zipfile.ZipFile(file_name).extractall()
 os.remove(file_name)
 os.makedirs(name='third_party', exist_ok=True)
-os.rename(dir_name, 'third_party/SDL2');
+os.rename(dir_name, 'third_party/SDL2')

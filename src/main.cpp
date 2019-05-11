@@ -187,7 +187,7 @@ int main(int argc, char** argv)
         fprintf(stderr, "ROM file is too large (max: 8MB)\n");
         return 1;
     case LoadROMStatus::ROMSizeNotPowerOfTwo:
-        fprintf(stderr, "ROM file size is a not power of 2\n");
+        fprintf(stderr, "ROM file size is not a power of 2\n");
         return 1;
     case LoadROMStatus::ROMSizeMismatch:
         fprintf(stderr, "ROM file size doesn't match the header\n");
