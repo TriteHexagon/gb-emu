@@ -27,7 +27,7 @@ const std::array<u8, 4> duty_cycles =
     0b00000001,
     0b10000001,
     0b10000111,
-    0b01111110,
+    0b10000011,
 };
 
 const double sample_ratio = 2097152.0 / sample_rate;
